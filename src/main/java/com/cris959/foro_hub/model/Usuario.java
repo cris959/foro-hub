@@ -27,8 +27,10 @@ public class Usuario {
     private String password;
 
     @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(name = "usuarios_perfiles",
-               joinColumns = @JoinColumn(name = "usuario_id"),
-               inverseJoinColumns = @JoinColumn(name = "perfil_id"))
-    private List<Perfil> perfiles = new ArrayList<>();
+//    @JoinTable(name = "usuarios_perfiles",
+//               joinColumns = @JoinColumn(name = "usuario_id"),
+//               inverseJoinColumns = @JoinColumn(name = "perfil_id"))
+    @ManyToOne(fetch = FetchType.EAGER) // EAGER para tener el rol disponible al autenticar
+    @JoinColumn(name = "perfil_id")
+    private Perfil perfil;
 }
