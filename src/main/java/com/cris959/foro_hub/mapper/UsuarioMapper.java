@@ -2,7 +2,9 @@ package com.cris959.foro_hub.mapper;
 
 import com.cris959.foro_hub.dto.DatosRespuestaUsuario;
 import com.cris959.foro_hub.model.Usuario;
+import org.springframework.stereotype.Component;
 
+@Component
 public class UsuarioMapper {
 
     private final PerfilMapper perfilMapper;
