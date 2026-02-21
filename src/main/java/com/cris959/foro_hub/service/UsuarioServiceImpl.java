@@ -2,6 +2,7 @@ package com.cris959.foro_hub.service;
 
 import com.cris959.foro_hub.dto.DatosRegistroUsuario;
 import com.cris959.foro_hub.dto.DatosRespuestaUsuario;
+import com.cris959.foro_hub.infra.errores.ValidacionException;
 import com.cris959.foro_hub.mapper.UsuarioMapper;
 import com.cris959.foro_hub.model.Usuario;
 import com.cris959.foro_hub.repository.PerfilRepository;
@@ -27,7 +28,13 @@ public class UsuarioServiceImpl implements IUsuarioService{
 
 
     @Override
+    @Transactional
     public DatosRespuestaUsuario registrarUsuario(DatosRegistroUsuario datos) {
+        // Validación de email único
+        if (usuarioRepository.existsByEmail(datos.email())) {
+            throw new ValidacionException("Ya existe un usuario registrado con este correo electrónico.");
+        }
+
         var perfil = perfilRepository.findById(datos.perfilId())
                 .orElseThrow(() -> new EntityNotFoundException("Perfil no encontrado"));
 

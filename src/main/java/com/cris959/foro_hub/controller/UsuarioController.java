@@ -20,6 +20,7 @@ public class UsuarioController {
         this.usuarioService = usuarioService;
     }
 
+    @PostMapping
     public ResponseEntity<DatosRespuestaUsuario> registrar(@RequestBody @Valid DatosRegistroUsuario datos,
                                                            UriComponentsBuilder uriComponentsBuilder) {
         // Llamamos al servicio (que usa el mapper y el repositorio)

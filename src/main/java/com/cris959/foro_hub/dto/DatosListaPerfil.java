@@ -6,8 +6,8 @@ import com.cris959.foro_hub.model.PerfilNombre;
 public record DatosListaPerfil(
         Long id, PerfilNombre nombre) {
 
-    public DatosListaPerfil(Perfil perfil) {
-        this(perfil.getId(), perfil.getNombre());
-    }
+//    public DatosListaPerfil(Perfil perfil) {
+//        this(perfil.getId(), perfil.getNombre());
+//    }
 
 }
