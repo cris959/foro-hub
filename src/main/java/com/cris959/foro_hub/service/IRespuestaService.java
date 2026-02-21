@@ -2,12 +2,13 @@ package com.cris959.foro_hub.service;
 
 import com.cris959.foro_hub.dto.DatosRegistroRespuesta;
 import com.cris959.foro_hub.dto.DatosRetornoRespuesta;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
-import java.util.List;
 
 public interface IRespuestaService {
 
-    DatosRetornoRespuesta registar(DatosRegistroRespuesta datos);
+    DatosRetornoRespuesta registrar(DatosRegistroRespuesta datos);
 
-    List<DatosRetornoRespuesta> listarPorTopico(Long topicoId);
+    Page<DatosRetornoRespuesta> listarPorTopico(Long topicoId, Pageable paginacion);
 }

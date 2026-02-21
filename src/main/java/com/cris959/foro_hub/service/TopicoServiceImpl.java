@@ -1,7 +1,9 @@
 package com.cris959.foro_hub.service;
 
+import com.cris959.foro_hub.dto.DatosActualizarTopico;
 import com.cris959.foro_hub.dto.DatosRegistroTopico;
 import com.cris959.foro_hub.dto.DatosRespuestaTopico;
+import com.cris959.foro_hub.infra.errores.ValidacionException;
 import com.cris959.foro_hub.mapper.TopicoMapper;
 import com.cris959.foro_hub.model.Topico;
 import com.cris959.foro_hub.repository.CursoRepository;
@@ -33,20 +35,33 @@ public class TopicoServiceImpl implements ITopicoService {
     @Override
     @Transactional
     public DatosRespuestaTopico registrar(DatosRegistroTopico datos) {
-        // Buscar las entidades relacionadas
-        var autor = usuarioRepository.findById(datos.idAutor())
-                .orElseThrow(() -> new RuntimeException("Autor no encontrado"));
-        var curso = cursoRepository.findById(datos.idCurso())
-                .orElseThrow(() -> new RuntimeException("Curso no encontrado"));
+        // 1. Validar duplicidad (Uso de tu nuevo método en el Repository)
+        if (topicoRepository.existsByTituloAndMensaje(datos.titulo(), datos.mensaje())) {
+            throw new ValidacionException("No es posible crear tópicos duplicados. Ya existe un tópico con el mismo título y mensaje.");
+        }
 
-        // Crear la entidad a partir del DTO
-        var topico = new Topico();
+        // 2. Validar que el Autor exista (Uso de orElseThrow para evitar el .get() peligroso)
+        var autor = usuarioRepository.findById(datos.idAutor())
+                .orElseThrow(() -> new ValidacionException("El autor con ID " + datos.idAutor() + " no existe en el sistema."));
+
+        // 3. Validar que el Curso exista
+        var curso = cursoRepository.findById(datos.idCurso())
+                .orElseThrow(() -> new ValidacionException("El curso con ID " + datos.idCurso() + " no existe."));
+
+        // 4. Instanciar y configurar la Entidad
+        Topico topico = new Topico();
         topico.setTitulo(datos.titulo());
         topico.setMensaje(datos.mensaje());
         topico.setAutor(autor);
         topico.setCurso(curso);
 
+        // El estado (StatusTopico) y la fecha de creación se asignan por defecto en la Entidad
+        // topico.setActivo(true); // Ya viene por defecto en tu entidad
+
+        // 5. Persistir en la base de datos
         topicoRepository.save(topico);
+
+        // 6. Retornar el DTO usando el Mapper blindado contra nulos
         return topicoMapper.toResponseDTO(topico);
     }
 
@@ -64,18 +79,28 @@ public class TopicoServiceImpl implements ITopicoService {
     }
 
     @Override
-    public DatosRespuestaTopico actualizar(Long id, DatosRespuestaTopico datos) {
+    @Transactional
+    public DatosRespuestaTopico actualizar(Long id, DatosActualizarTopico datos) {
         var topico = topicoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Topico no encontrado"));
 
-        topico.setTitulo(datos.titulo());
-        topico.setMensaje(datos.mensaje());
-        topico.setStatusTopico(datos.statusTopico());
+        if (!topico.getActivo()) {
+            throw new ValidacionException("No se puede editar un tópico eliminado.");
+        }
+
+        // Actualizamos solo lo permitido
+        if (datos.titulo() != null && !datos.titulo().isBlank()) {
+            topico.setTitulo(datos.titulo());
+        }
+        if (datos.mensaje() != null && !datos.mensaje().isBlank()) {
+            topico.setMensaje(datos.mensaje());
+        }
 
         return topicoMapper.toResponseDTO(topico);
     }
 
     @Override
+    @Transactional
     public void eliminar(Long id) {
         // CAMBIO: Buscar el tópico
         var topico = topicoRepository.findById(id)
@@ -84,7 +109,10 @@ public class TopicoServiceImpl implements ITopicoService {
         // CAMBIO: Cambiar el estado a inactivo (borrado lógico)
         topico.setActivo(false);
 
+        // Al estar la anotacion @Transactional, Hibernate detectará el cambio
+        // y hará el UPDATE automáticamente al finalizar.
+
         // Guardar cambios
-        topicoRepository.save(topico);
+//        topicoRepository.save(topico);
     }
 }

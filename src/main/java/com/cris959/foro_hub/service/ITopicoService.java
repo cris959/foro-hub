@@ -1,5 +1,6 @@
 package com.cris959.foro_hub.service;
 
+import com.cris959.foro_hub.dto.DatosActualizarTopico;
 import com.cris959.foro_hub.dto.DatosRegistroTopico;
 import com.cris959.foro_hub.dto.DatosRespuestaTopico;
 import org.springframework.data.domain.Page;
@@ -13,7 +14,7 @@ public interface ITopicoService {
 
     DatosRespuestaTopico buscarPorId(Long id);
 
-    DatosRespuestaTopico actualizar(Long id, DatosRespuestaTopico datos);
+    DatosRespuestaTopico actualizar(Long id, DatosActualizarTopico datos);
 
     void eliminar(Long id);
 }
