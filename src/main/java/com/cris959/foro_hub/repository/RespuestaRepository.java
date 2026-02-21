@@ -9,5 +9,9 @@ import java.util.List;
 @Repository
 public interface RespuestaRepository extends JpaRepository<Respuesta, Long> {
 
+    // Busca una respuesta por ID de tópico
     List<Respuesta> findByTopicoId(Long idTopico);
+
+    // Busca todas las respuestas asociadas a un ID de tópico
+    List<Respuesta> findAllByTopicoId(Long topicoId);
 }
