@@ -8,12 +8,17 @@ import org.springframework.stereotype.Component;
 public class RespuestaMapper {
 
         public DatosRetornoRespuesta toDatosRetorno(Respuesta respuesta) {
+            if (respuesta == null) {
+                return null;
+            }
             return new DatosRetornoRespuesta(
                     respuesta.getId(),
                     respuesta.getMensaje(),
                     respuesta.getFechaCreacion(),
-                    respuesta.getAutor().getNombre(),
-                    respuesta.getTopico().getTitulo()
+                    // Verificación de nulidad para el Autor
+                    respuesta.getAutor() != null ? respuesta.getAutor().getNombre() : "Autor no disponible",
+                    // Verificación de nulidad para el Tópico
+                    respuesta.getTopico() != null ? respuesta.getTopico().getTitulo() : "Tópico no disponible"
             );
         }
 }

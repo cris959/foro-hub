@@ -13,11 +13,19 @@ public class UsuarioMapper {
         this.perfilMapper = perfilMapper;
     }
     public DatosRespuestaUsuario toDatosRespuestaUsuario(Usuario usuario) {
+        // 1. Evitamos que el mapper falle si el objeto usuario es nulo
+        if (usuario == null) {
+            return null;
+        }
         return new DatosRespuestaUsuario(
                 usuario.getId(),
                 usuario.getNombre(),
                 usuario.getEmail(),
-                perfilMapper.toDatosListaPerfil(usuario.getPerfil())
+
+                // 2. Verificamos que el perfil no sea nulo antes de pasarlo al PerfilMapper
+                usuario.getPerfil() != null
+                        ? perfilMapper.toDatosListaPerfil(usuario.getPerfil())
+                        : null
         );
     }
 }

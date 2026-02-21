@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-@Entity
+@Entity(name = "Topico")
 @Getter @Setter
 @AllArgsConstructor
 @NoArgsConstructor
@@ -40,9 +40,11 @@ public class Topico {
     private StatusTopico statusTopico = StatusTopico.NO_RESPONDIDO;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "autor_id")
     private Usuario autor;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "curso_id")
     private Curso curso;
 
     @OneToMany(mappedBy = "topico")

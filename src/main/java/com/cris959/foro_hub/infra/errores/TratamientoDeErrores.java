@@ -1,5 +1,6 @@
 package com.cris959.foro_hub.infra.errores;
 
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -11,18 +12,24 @@ import java.util.List;
 @RestControllerAdvice
 public class TratamientoDeErrores {
 
-    // 1. Manejar errores de validación de los campos (@Valid)
+    // 1. Manejar error 404 cuando no se encuentra un ID (findById().orElseThrow())
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<Void> tratarError404() {
+        return ResponseEntity.notFound().build();
+    }
+
+    // 2. Manejar errores de validación de los campos (@Valid) - Error 400
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<List<DatosErrorValidacion>> tratarErrorValidacion(MethodArgumentNotValidException ex) {
+    public ResponseEntity<List<DatosErrorValidacion>> tratarError400(MethodArgumentNotValidException ex) {
         var errores = ex.getFieldErrors().stream()
                 .map(DatosErrorValidacion::new)
                 .toList();
         return ResponseEntity.badRequest().body(errores);
     }
 
-    // 2. Manejar errores de negocio personalizados (como el duplicado)
-    @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<String> tratarErrorNegocio(RuntimeException ex) {
+    // 3. Manejar errores de lógica de negocio (Validaciones personalizadas)
+    @ExceptionHandler(ValidacionException.class) // Si creas una clase propia de excepción
+    public ResponseEntity<String> tratarErrorDeValidacionDeNegocio(ValidacionException ex) {
         return ResponseEntity.badRequest().body(ex.getMessage());
     }
 

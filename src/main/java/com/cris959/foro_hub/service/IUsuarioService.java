@@ -5,4 +5,6 @@ import com.cris959.foro_hub.dto.DatosRespuestaUsuario;
 
 public interface IUsuarioService {
     DatosRespuestaUsuario registrarUsuario(DatosRegistroUsuario datos);
+
+    DatosRespuestaUsuario obtenerPorId(Long id);
 }

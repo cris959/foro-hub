@@ -5,9 +5,7 @@ import com.cris959.foro_hub.dto.DatosRespuestaUsuario;
 import com.cris959.foro_hub.service.IUsuarioService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
@@ -30,5 +28,11 @@ public class UsuarioController {
         // Buenas prácticas: Retornar 201 Created y la URL del nuevo recurso
         URI url = uriComponentsBuilder.path("/usuarios/{id}").buildAndExpand(respuesta.id()).toUri();
         return ResponseEntity.created(url).body(respuesta);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<DatosRespuestaUsuario> detallarUsuario(@PathVariable Long id) {
+        var usuario = usuarioService.obtenerPorId(id);
+        return ResponseEntity.ok(usuario);
     }
 }

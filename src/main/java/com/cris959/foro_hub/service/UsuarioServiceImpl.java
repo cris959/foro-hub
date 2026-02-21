@@ -8,6 +8,7 @@ import com.cris959.foro_hub.repository.PerfilRepository;
 import com.cris959.foro_hub.repository.UsuarioRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class UsuarioServiceImpl implements IUsuarioService{
@@ -40,5 +41,15 @@ public class UsuarioServiceImpl implements IUsuarioService{
 
         // Usamos el mapper para la respuesta
         return usuarioMapper.toDatosRespuestaUsuario(usuario);
+    }
+
+    @Override
+    @Transactional(readOnly = true) // Optimizamos para solo lectura
+    public DatosRespuestaUsuario obtenerPorId(Long id) {
+        // 1. Buscamos el usuario en el repositorio
+        return usuarioRepository.findById(id)
+                // 2. Si no existe, lanzamos una excepción clara
+                .map(usuarioMapper::toDatosRespuestaUsuario)
+                .orElseThrow(() -> new EntityNotFoundException("No se encontró el usuario con el ID: " + id));
     }
 }

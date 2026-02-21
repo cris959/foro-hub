@@ -8,14 +8,17 @@ import org.springframework.stereotype.Component;
 public class TopicoMapper {
 
     public DatosRespuestaTopico toResponseDTO(Topico topico) {
+        // Validamos que el tópico no sea nulo
+        if (topico == null) return null;
+
         return new DatosRespuestaTopico(
                 topico.getId(),
                 topico.getTitulo(),
                 topico.getMensaje(),
                 topico.getFechaCreacion(),
                 topico.getStatusTopico(),
-                topico.getAutor().getNombre(),
-                topico.getCurso().getNombre()
+                topico.getAutor() != null ? topico.getAutor().getNombre() : "Autor anónimo",
+                topico.getCurso() != null ? topico.getCurso().getNombre() : "Curso no asignado"
         );
     }
 }

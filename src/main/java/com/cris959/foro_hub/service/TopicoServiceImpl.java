@@ -10,6 +10,7 @@ import com.cris959.foro_hub.repository.UsuarioRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class TopicoServiceImpl implements ITopicoService {
@@ -30,6 +31,7 @@ public class TopicoServiceImpl implements ITopicoService {
     }
 
     @Override
+    @Transactional
     public DatosRespuestaTopico registrar(DatosRegistroTopico datos) {
         // Buscar las entidades relacionadas
         var autor = usuarioRepository.findById(datos.idAutor())
@@ -49,6 +51,7 @@ public class TopicoServiceImpl implements ITopicoService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Page<DatosRespuestaTopico> listar(Pageable paginacion) {
         return topicoRepository.findByActivoTrue(paginacion).map(topicoMapper::toResponseDTO);
     }

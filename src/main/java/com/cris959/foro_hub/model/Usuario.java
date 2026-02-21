@@ -6,10 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.ArrayList;
-import java.util.List;
 
-@Entity
+@Entity(name = "Usuario")
 @Getter @Setter
 @AllArgsConstructor
 @NoArgsConstructor
@@ -26,10 +24,6 @@ public class Usuario {
 
     private String password;
 
-    @ManyToMany(fetch = FetchType.EAGER)
-//    @JoinTable(name = "usuarios_perfiles",
-//               joinColumns = @JoinColumn(name = "usuario_id"),
-//               inverseJoinColumns = @JoinColumn(name = "perfil_id"))
     @ManyToOne(fetch = FetchType.EAGER) // EAGER para tener el rol disponible al autenticar
     @JoinColumn(name = "perfil_id")
     private Perfil perfil;

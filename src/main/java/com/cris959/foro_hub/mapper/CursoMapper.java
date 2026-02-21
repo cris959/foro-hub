@@ -8,6 +8,8 @@ import org.springframework.stereotype.Component;
 public class CursoMapper {
 
     public DatosRespuestaCurso toResponseDTO(Curso curso) {
+        if (curso == null) return null;
+
         return new DatosRespuestaCurso(
                 curso.getId(),
                 curso.getNombre(),
