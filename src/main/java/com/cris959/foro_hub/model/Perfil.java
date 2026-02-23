@@ -16,6 +16,7 @@ public class Perfil {
     @EqualsAndHashCode.Include
     private Long id;
 
+    @Column(unique = true, nullable = false)
     @Enumerated(EnumType.STRING)
     private PerfilNombre nombre;
 }

@@ -1,5 +1,6 @@
 package com.cris959.foro_hub.service;
 
+import com.cris959.foro_hub.dto.DatosActualizarUsuario;
 import com.cris959.foro_hub.dto.DatosRegistroUsuario;
 import com.cris959.foro_hub.dto.DatosRespuestaUsuario;
 import com.cris959.foro_hub.infra.errores.ValidacionException;
@@ -36,7 +37,7 @@ public class UsuarioServiceImpl implements IUsuarioService{
         }
 
         var perfil = perfilRepository.findById(datos.perfilId())
-                .orElseThrow(() -> new EntityNotFoundException("Perfil no encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException("El perfil con ID " + datos.perfilId() + " no existe en el sistema."));
 
         Usuario usuario = new Usuario();
         usuario.setNombre(datos.nombre());
@@ -58,5 +59,41 @@ public class UsuarioServiceImpl implements IUsuarioService{
                 // 2. Si no existe, lanzamos una excepción clara
                 .map(usuarioMapper::toDatosRespuestaUsuario)
                 .orElseThrow(() -> new EntityNotFoundException("No se encontró el usuario con el ID: " + id));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public DatosRespuestaUsuario buscarPorEmail(String email) {
+        var usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("No se encontró un usuario con el email: " + email));
+
+        return usuarioMapper.toDatosRespuestaUsuario(usuario);
+    }
+
+    @Override
+    @Transactional
+    public DatosRespuestaUsuario actualizar(DatosActualizarUsuario datos) {
+        // 1. Buscamos al usuario o lanzamos error si no existe (404)
+        var usuario = usuarioRepository.findById(datos.id())
+                .orElseThrow(() -> new EntityNotFoundException("No se encontró el usuario con ID: " + datos.id()));
+
+        // 2. Actualizamos solo los campos que no vienen nulos en el DTO
+        if (datos.nombre() != null && !datos.nombre().isBlank()) {
+            usuario.setNombre(datos.nombre());
+        }
+
+        if (datos.password() != null && !datos.password().isBlank()) {
+            // Aquí podrías agregar tu lógica de BCrypt para encriptar
+            usuario.setPassword(datos.password());
+        }
+
+        if (datos.perfilId() != null) {
+            var perfil = perfilRepository.findById(datos.perfilId())
+                    .orElseThrow(() -> new EntityNotFoundException("El perfil asignado no existe"));
+            usuario.setPerfil(perfil);
+        }
+
+        // 3. Convertimos la entidad actualizada a DTO de respuesta
+        return usuarioMapper.toDatosRespuestaUsuario(usuario);
     }
 }

@@ -4,6 +4,7 @@ import com.cris959.foro_hub.model.PerfilNombre;
 import jakarta.validation.constraints.NotNull;
 
 public record DatosRegistroPerfil(
-        @NotNull PerfilNombre nombre
+        @NotNull(message = "El nombre del perfil es obligatorio (ej: ROLE_ADMIN, ROLE_USER)")
+        PerfilNombre nombre
         ) {
 }

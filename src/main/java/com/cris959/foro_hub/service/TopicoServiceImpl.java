@@ -9,6 +9,7 @@ import com.cris959.foro_hub.model.Topico;
 import com.cris959.foro_hub.repository.CursoRepository;
 import com.cris959.foro_hub.repository.TopicoRepository;
 import com.cris959.foro_hub.repository.UsuarioRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -42,11 +43,11 @@ public class TopicoServiceImpl implements ITopicoService {
 
         // 2. Validar que el Autor exista (Uso de orElseThrow para evitar el .get() peligroso)
         var autor = usuarioRepository.findById(datos.idAutor())
-                .orElseThrow(() -> new ValidacionException("El autor con ID " + datos.idAutor() + " no existe en el sistema."));
+                .orElseThrow(() -> new EntityNotFoundException("El autor con ID " + datos.idAutor() + " no existe en el sistema."));
 
         // 3. Validar que el Curso exista
         var curso = cursoRepository.findById(datos.idCurso())
-                .orElseThrow(() -> new ValidacionException("El curso con ID " + datos.idCurso() + " no existe."));
+                .orElseThrow(() -> new EntityNotFoundException("El curso con ID " + datos.idCurso() + " no existe."));
 
         // 4. Instanciar y configurar la Entidad
         Topico topico = new Topico();
@@ -72,6 +73,7 @@ public class TopicoServiceImpl implements ITopicoService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public DatosRespuestaTopico buscarPorId(Long id) {
         var topico = topicoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Topico no encontrado"));

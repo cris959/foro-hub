@@ -3,7 +3,6 @@ package com.cris959.foro_hub.controller;
 import com.cris959.foro_hub.dto.DatosActualizarTopico;
 import com.cris959.foro_hub.dto.DatosRegistroTopico;
 import com.cris959.foro_hub.dto.DatosRespuestaTopico;
-import com.cris959.foro_hub.model.Topico;
 import com.cris959.foro_hub.service.ITopicoService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;

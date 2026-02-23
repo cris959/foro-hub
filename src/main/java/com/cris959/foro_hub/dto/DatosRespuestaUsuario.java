@@ -8,8 +8,8 @@ public record DatosRespuestaUsuario(
         String email,
         DatosListaPerfil perfil // Usamos el DTO de perfil que creamos antes
 ) {
-//    public DatosRespuestaUsuario(Usuario usuario) {
-//        this(usuario.getId(), usuario.getNombre(), usuario.getEmail(),
-//                new DatosListaPerfil(usuario.getPerfil()));
-//    }
+    public DatosRespuestaUsuario(Usuario usuario) {
+        this(usuario.getId(), usuario.getNombre(), usuario.getEmail(),
+                new DatosListaPerfil(usuario.getPerfil()));
+    }
 }

@@ -8,6 +8,7 @@ import com.cris959.foro_hub.repository.CursoRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class CursoServiceImpl implements ICursoService{
@@ -24,6 +25,7 @@ public class CursoServiceImpl implements ICursoService{
 
 
     @Override
+    @Transactional
     public DatosRespuestaCurso registrar(DatosRegistroCurso datos) {
         var curso = new Curso();
         curso.setNombre(datos.nombre());
