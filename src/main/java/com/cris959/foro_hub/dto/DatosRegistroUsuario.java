@@ -14,5 +14,6 @@ public record DatosRegistroUsuario(
         String password,
         @NotNull(message = "Debe asignar un ID de perfil al usuario")
         Long perfilId // El cliente envía el ID del perfil que quiere asignar
+//        Boolean activo
 ) {
 }

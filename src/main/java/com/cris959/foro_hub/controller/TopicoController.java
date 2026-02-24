@@ -13,6 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/topicos")
 public class TopicoController {
@@ -26,7 +28,7 @@ public class TopicoController {
     // POST: Crear un nuevo tópico
     @PostMapping
     public ResponseEntity<DatosRespuestaTopico> registrar(@RequestBody @Valid DatosRegistroTopico datos, UriComponentsBuilder uriBuilder) {
-        var topicoResponse = topicoService.registrar(datos);
+        var topicoResponse = topicoService.crear(datos);
         var uri = uriBuilder.path("/topicos/{id}").buildAndExpand(topicoResponse.id()).toUri();
         return ResponseEntity.created(uri).body(topicoResponse);
     }
@@ -58,5 +60,10 @@ public class TopicoController {
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
         topicoService.eliminar(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/historial")
+    public ResponseEntity<List<DatosRespuestaTopico>> listarActivoEInactivos() {
+        return ResponseEntity.ok(topicoService.listarTodoElHistorial());
     }
 }

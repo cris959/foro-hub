@@ -6,9 +6,11 @@ import com.cris959.foro_hub.dto.DatosRespuestaTopico;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.List;
+
 public interface ITopicoService {
 
-    DatosRespuestaTopico registrar(DatosRegistroTopico datos);
+    DatosRespuestaTopico crear(DatosRegistroTopico datos);
 
     Page<DatosRespuestaTopico> listar(Pageable paginacion);
 
@@ -17,4 +19,7 @@ public interface ITopicoService {
     DatosRespuestaTopico actualizar(Long id, DatosActualizarTopico datos);
 
     void eliminar(Long id);
+
+    // Procedimeinto para listar todos (activos e inactivos, ya que no usas @Where)
+    List<DatosRespuestaTopico> listarTodoElHistorial();
 }

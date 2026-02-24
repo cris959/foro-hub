@@ -11,14 +11,20 @@ public class TopicoMapper {
         // Validamos que el tópico no sea nulo
         if (topico == null) return null;
 
+        // Extraemos el autor para limpiar el código
+//        var autor = topico.getAutor();
+//        var curso = topico.getCurso();
+
         return new DatosRespuestaTopico(
                 topico.getId(),
                 topico.getTitulo(),
                 topico.getMensaje(),
                 topico.getFechaCreacion(),
                 topico.getStatusTopico(),
-                topico.getAutor() != null ? topico.getAutor().getNombre() : "Autor anónimo",
-                topico.getCurso() != null ? topico.getCurso().getNombre() : "Curso no asignado"
+                (topico.getAutor() != null) ? topico.getAutor().getNombre() : "Autor anónimo",
+                (topico.getCurso() != null) ? topico.getCurso().getNombre() : "Sin curso",
+                (topico.getAutor() != null) && topico.getAutor().getActivo(),
+                topico.getActivo()                  // 9. topicoActivo
         );
     }
 }

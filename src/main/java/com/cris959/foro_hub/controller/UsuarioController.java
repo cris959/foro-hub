@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
+import java.util.List;
 
 @RestController
 @RequestMapping("/usuarios")
@@ -52,5 +53,25 @@ public class UsuarioController {
     public ResponseEntity actualizar(@RequestBody @Valid DatosActualizarUsuario datos) {
         var usuarioActualizado = usuarioService.actualizar(datos);
         return ResponseEntity.ok(usuarioActualizado);
+    }
+
+    @DeleteMapping("/{id}")
+    @Transactional
+    public ResponseEntity eliminar(@PathVariable Long id) {
+        usuarioService.eliminar(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/activar")
+    @Transactional
+    public ResponseEntity activar(@PathVariable Long id) {
+        usuarioService.activar(id);
+        return ResponseEntity.noContent().build(); // Retornamos 204 porque la operación fue exitosa
+    }
+
+    @GetMapping("/inactivos")
+    public ResponseEntity<List<DatosRespuestaUsuario>> listarInactivos() {
+        var lista = usuarioService.listarInactivos();
+        return ResponseEntity.ok(lista);
     }
 }

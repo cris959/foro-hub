@@ -12,6 +12,8 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 public class UsuarioServiceImpl implements IUsuarioService{
 
@@ -32,7 +34,7 @@ public class UsuarioServiceImpl implements IUsuarioService{
     @Transactional
     public DatosRespuestaUsuario registrarUsuario(DatosRegistroUsuario datos) {
         // Validación de email único
-        if (usuarioRepository.existsByEmail(datos.email())) {
+        if (usuarioRepository.countByEmailNative(datos.email()) > 0) {
             throw new ValidacionException("Ya existe un usuario registrado con este correo electrónico.");
         }
 
@@ -95,5 +97,40 @@ public class UsuarioServiceImpl implements IUsuarioService{
 
         // 3. Convertimos la entidad actualizada a DTO de respuesta
         return usuarioMapper.toDatosRespuestaUsuario(usuario);
+    }
+
+    @Override
+    @Transactional
+    public void eliminar(Long id) {
+// 1. Buscamos al usuario (si no existe, lanza 404)
+        var usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("No se encontró el usuario con ID: " + id));
+
+        // 2. Aplicamos la eliminación lógica
+        usuario.setActivo(false);
+
+        // Nota: Gracias a @Transactional, el cambio se guarda solo al final del procedimiento.
+    }
+
+    @Override
+    @Transactional
+    public void activar(Long id) {
+// Usamos el procedimiento nativo para encontrar al usuario aunque tenga activo = 0
+        var usuario = usuarioRepository.encontrarEliminadoPorId(id)
+                .orElseThrow(() -> new EntityNotFoundException("No se encontró el usuario con ID: " + id));
+
+        // Cambiamos el estado a true
+        usuario.setActivo(true);
+
+        // No hace falta llamar a save() por el @Transactional (Dirty Checking)
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<DatosRespuestaUsuario> listarInactivos() {
+        return usuarioRepository.findAllInactivos()
+                .stream()
+                .map(usuarioMapper::toDatosRespuestaUsuario)
+                .toList();
     }
 }

@@ -7,6 +7,7 @@ public record DatosActualizarUsuario(
         Long id,
         String nombre,
         String password,
+        Boolean activo,
         Long perfilId
 ) {
 }

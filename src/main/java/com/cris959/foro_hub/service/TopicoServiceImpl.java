@@ -15,6 +15,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.Objects;
+
 @Service
 public class TopicoServiceImpl implements ITopicoService {
 
@@ -35,7 +38,7 @@ public class TopicoServiceImpl implements ITopicoService {
 
     @Override
     @Transactional
-    public DatosRespuestaTopico registrar(DatosRegistroTopico datos) {
+    public DatosRespuestaTopico crear(DatosRegistroTopico datos) {
         // 1. Validar duplicidad (Uso de tu nuevo método en el Repository)
         if (topicoRepository.existsByTituloAndMensaje(datos.titulo(), datos.mensaje())) {
             throw new ValidacionException("No es posible crear tópicos duplicados. Ya existe un tópico con el mismo título y mensaje.");
@@ -116,5 +119,21 @@ public class TopicoServiceImpl implements ITopicoService {
 
         // Guardar cambios
 //        topicoRepository.save(topico);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<DatosRespuestaTopico> listarTodoElHistorial() {
+
+        var todos = topicoRepository.findAll();
+
+        // ESTO ES PARA DEBUG: Mira tu consola de IntelliJ/Eclipse
+//        System.out.println("DEBUG: Se encontraron " + todos.size() + " tópicos en la lista.");
+//        todos.forEach(t -> System.out.println("ID: " + t.getId() + " | Activo: " + t.getActivo()));
+
+        return todos.stream()
+                .map(topicoMapper::toResponseDTO)
+                .filter(Objects::nonNull) // Por si algún mapper falló
+                .toList();
     }
 }

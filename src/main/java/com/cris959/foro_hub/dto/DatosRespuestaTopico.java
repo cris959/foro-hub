@@ -11,6 +11,8 @@ public record DatosRespuestaTopico(
         LocalDateTime fechaCreacion,
         StatusTopico statusTopico,
         String nombreAutor,
-        String nombreCurso
+        String nombreCurso,
+        Boolean autorActivo,  // Estado de la cuenta del usuario
+        Boolean topicoActivo  // Estado de visibilidad del post (borrado lógico)
 ) {
 }
