@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
-import java.util.List;
 
 @RestController
 @RequestMapping("/respuestas")
@@ -36,20 +35,12 @@ public class RespuestaController {
         return ResponseEntity.created(url).body(respuesta);
     }
 
-    // Obtener respuestas de un tópico específico
-//    @GetMapping("/topico/{idTopico}")
-//    public ResponseEntity<Page<DatosRetornoRespuesta>> listarPorTopico(@PathVariable Long idTopico,
-//                                                                       @PageableDefault(size = 10, sort = "fechaCreacion")Pageable paginacion) {
-//        var respuestas = respuestaService.listarPorTopico(idTopico, paginacion);
-//        return ResponseEntity.ok(respuestas);
-//    }
-
-    // Ejemplo de cómo marcar una respuesta como solución
     @PutMapping("/{id}/solucion")
     @Transactional
     public ResponseEntity marcarComoSolucion(@PathVariable Long id) {
+        respuestaService.marcarComoSolucion(id);
         // Aquí llamarías a un procedimiento del service que cambie el boolean 'solucion' a true
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok("La respuesta ha sido marcada como la solución definitiva!");
     }
 
     @GetMapping("/respuesta/{topicoId}")
@@ -57,5 +48,12 @@ public class RespuestaController {
                                                                        @PageableDefault(size = 10, sort = "fechaCreacion", direction = Sort.Direction.ASC) Pageable paginacion) {
         var pagina = respuestaService.listarPorTopico(topicoId, paginacion);
         return ResponseEntity.ok(pagina);
+    }
+
+    @GetMapping
+    public ResponseEntity<Page<DatosRetornoRespuesta>> listarTodasLasRespuestas(
+            @PageableDefault(size = 10, sort = "fechaCreacion", direction = Sort.Direction.DESC) Pageable paginacion) {
+        var todasLasRespuestas = respuestaService.listarTodas(paginacion);
+        return ResponseEntity.ok(todasLasRespuestas);
     }
 }

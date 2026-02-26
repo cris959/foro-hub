@@ -33,4 +33,12 @@ public class Respuesta {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "topico_id")
     private Topico topico;
+
+    public Respuesta(String mensaje, Topico topico, Usuario autor) {
+        this.mensaje = mensaje;
+        this.topico = topico;
+        this.autor = autor;
+        this.fechaCreacion = LocalDateTime.now();
+        this.solucion = false;
+    }
 }

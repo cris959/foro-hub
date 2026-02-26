@@ -13,4 +13,6 @@ public interface IRespuestaService {
     Page<DatosRetornoRespuesta> listarPorTopico(Long topicoId, Pageable paginacion);
 
     void marcarComoSolucion(Long id);
+
+    Page<DatosRetornoRespuesta> listarTodas(Pageable paginacion);
 }

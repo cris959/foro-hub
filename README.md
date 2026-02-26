@@ -59,3 +59,34 @@ CERRADO
     Respuesta "*" --> "1" Topico : pertenece a
     Topico "1" --> "*" Respuesta : tiene
 ```
+
+```mermaid
+graph TD
+%% Inicio del proceso
+User((Usuario)) -->|1. Publica Tópico| TC[TopicoController]
+TC -->|DTO Registro| TS[TopicoService]
+TS -->|Verifica Curso/Autor| TR[(TopicoRepository)]
+TR -->|Guarda| DB[(Base de Datos)]
+
+    %% Flujo de Respuesta
+    User -->|2. Responde Tópico| RC[RespuestaController]
+    RC -->|DTO RegistroRespuesta| RS[RespuestaService]
+    RS -->|Relaciona con TopicoID| RR[(RespuestaRepository)]
+    RR -->|Persiste Respuesta| DB
+    
+    %% Flujo de Visualización
+    User -->|3. Consulta Detalle| RC
+    RC -->|Busca por ID Topico + Paginación| RS
+    RS -->|Query Paginada| RR
+    RR -->|Entidades| RS
+    RS -->|Mapea a DTO Retorno| RM[RespuestaMapper]
+    RM -->|JSON Paginado| User
+
+    %% Flujo de Solución
+    User -->|4. Marca Solución| RC
+    RC -->|ID Respuesta| RS
+    RS -->|1. Desmarca otras soluciones| RR
+    RS -->|2. Setea solucion=true| RR
+    RS -->|3. Cambia Status a SOLUCIONADO| TR
+    TR & RR -->|Commit Transaction| DB
+```

@@ -11,19 +11,30 @@ import java.util.Optional;
 @Repository
 public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 
-    // 1. Reemplaza a findByEmail y findByEmailActivo.
-    // Por convención de Spring Data, ya filtrará por activo=1 automáticamente.
+    /**
+     * Busca un usuario activo por su correo electrónico.
+     * Es el procedimiento principal para el proceso de autenticación y carga de detalles de usuario.
+     */
     Optional<Usuario> findByEmail(String email);
 
-    // En UsuarioRepository.java
+    /**
+     * Consulta nativa para contar registros con un correo específico.
+     * Proporciona una validación rápida y de bajo costo para verificar si un email ya está registrado.
+     */
     @Query(value = "SELECT COUNT(*) FROM usuarios WHERE email = :email", nativeQuery = true)
     Long countByEmailNative(String email);
 
-    // 3. NECESARIO: Porque se salta el filtro @Where para poder reactivar
+    /**
+     * Recupera un usuario por su ID mediante SQL nativo, ignorando filtros de estado.
+     * Permite acceder a cuentas desactivadas o eliminadas para procesos de soporte o auditoría.
+     */
     @Query(value = "SELECT * FROM usuarios WHERE id = :id", nativeQuery = true)
     Optional<Usuario> encontrarEliminadoPorId(Long id);
 
-    // 4. NECESARIO: Porque busca específicamente lo que el filtro @Where oculta
+    /**
+     * Obtiene el listado completo de usuarios con estado inactivo.
+     * Útil para paneles de administración que gestionan usuarios baneados o cuentas suspendidas.
+     */
     @Query(value = "SELECT * FROM usuarios WHERE activo = 0", nativeQuery = true)
     List<Usuario> findAllInactivos();
 }
