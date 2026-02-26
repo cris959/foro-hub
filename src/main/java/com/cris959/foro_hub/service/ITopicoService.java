@@ -20,6 +20,8 @@ public interface ITopicoService {
 
     void eliminar(Long id);
 
+    void activar(Long id);
+
     // Procedimeinto para listar todos (activos e inactivos, ya que no usas @Where)
     List<DatosRespuestaTopico> listarTodoElHistorial();
 }

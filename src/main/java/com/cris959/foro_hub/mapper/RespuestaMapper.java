@@ -18,7 +18,8 @@ public class RespuestaMapper {
                     // Verificación de nulidad para el Autor
                     respuesta.getAutor() != null ? respuesta.getAutor().getNombre() : "Autor no disponible",
                     // Verificación de nulidad para el Tópico
-                    respuesta.getTopico() != null ? respuesta.getTopico().getTitulo() : "Tópico no disponible"
+                    respuesta.getTopico() != null ? respuesta.getTopico().getTitulo() : "Tópico no disponible",
+                    respuesta.getSolucion()
             );
         }
 }

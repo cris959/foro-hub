@@ -15,10 +15,6 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     // Por convención de Spring Data, ya filtrará por activo=1 automáticamente.
     Optional<Usuario> findByEmail(String email);
 
-    // Ahora este procedimiento verá el TOTAL de DB, incluso lo que @Where oculta
-//    @Query(value = "SELECT COUNT(*) > 0 FROM usuarios WHERE email = :email", nativeQuery = true)
-//    boolean existsByEmail(String email);
-
     // En UsuarioRepository.java
     @Query(value = "SELECT COUNT(*) FROM usuarios WHERE email = :email", nativeQuery = true)
     Long countByEmailNative(String email);

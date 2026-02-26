@@ -107,18 +107,33 @@ public class TopicoServiceImpl implements ITopicoService {
     @Override
     @Transactional
     public void eliminar(Long id) {
-        // CAMBIO: Buscar el tópico
-        var topico = topicoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Tópico no encontrado"));
+        // 1. Buscamos el tópico incluyendo los que tienen activo = 0
+        var topicoOptional = topicoRepository.encontrarEliminadoPorId(id);
 
-        // CAMBIO: Cambiar el estado a inactivo (borrado lógico)
-        topico.setActivo(false);
+        if (topicoOptional.isPresent()) {
+            var topico = topicoOptional.get();
 
-        // Al estar la anotacion @Transactional, Hibernate detectará el cambio
-        // y hará el UPDATE automáticamente al finalizar.
+            // 2. Si ya está inactivo, no hacemos nada (evita el error 500)
+            if (!topico.getActivo()) {
+                return; // Aquí podrías lanzar una excepción personalizada si prefieres un 400
+            }
 
-        // Guardar cambios
-//        topicoRepository.save(topico);
+            // 3. Si está activo, lo "eliminamos" (borrado lógico)
+            topico.setActivo(false);
+            // Si usas @SQLDelete, simplemente usa: topicoRepository.delete(topico);
+        } else {
+            throw new EntityNotFoundException("El tópico con ID " + id + " no existe en la base de datos.");
+        }
+    }
+
+    @Override
+    public void activar(Long id) {
+        var topico = topicoRepository.encontrarEliminadoPorId(id)
+                .orElseThrow(()-> new EntityNotFoundException("No se encontró el topico con ID: " + id));
+
+        topico.setActivo(true);
+
+
     }
 
     @Override

@@ -11,4 +11,6 @@ public interface IRespuestaService {
     DatosRetornoRespuesta registrar(DatosRegistroRespuesta datos);
 
     Page<DatosRetornoRespuesta> listarPorTopico(Long topicoId, Pageable paginacion);
+
+    void marcarComoSolucion(Long id);
 }

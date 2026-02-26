@@ -5,6 +5,10 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SoftDelete;
+import org.hibernate.annotations.Where;
+import org.hibernate.type.NumericBooleanConverter;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -15,6 +19,8 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "topicos")
+@SQLDelete(sql = "UPDATE usuarios SET activo = 0 WHERE id = ?") // Opcional: automatiza el borrado lógico
+@Where(clause = "activo = 1") // Filtra automáticamente todos los SELECT
 public class Topico {
 
     @Id
@@ -26,7 +32,7 @@ public class Topico {
     private String mensaje;
 
     @Column(name = "activo", nullable = false)
-    private Boolean activo = true; // Por defecto está activo
+    private Boolean activo = true;
 
     @Column(name = "fecha_creacion", nullable = false)
     private LocalDateTime fechaCreacion = LocalDateTime.now();

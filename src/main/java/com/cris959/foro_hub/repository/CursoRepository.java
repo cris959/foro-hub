@@ -12,4 +12,7 @@ import java.util.List;
 public interface CursoRepository extends JpaRepository<Curso, Long> {
 
     Page<Curso> findByActivoTrue(Pageable paginacion);
+
+    // Si prefieres la validación doble (recomendada):
+    boolean existsByNombreAndCategoria(String nombre, String categoria);
 }

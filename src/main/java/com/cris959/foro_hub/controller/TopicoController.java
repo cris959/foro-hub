@@ -66,4 +66,11 @@ public class TopicoController {
     public ResponseEntity<List<DatosRespuestaTopico>> listarActivoEInactivos() {
         return ResponseEntity.ok(topicoService.listarTodoElHistorial());
     }
+
+    @PostMapping("/{id}/activar")
+    @Transactional
+    public ResponseEntity activar(@PathVariable Long id) {
+        topicoService.activar(id);
+        return ResponseEntity.noContent().build();
+    }
 }

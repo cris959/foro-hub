@@ -7,6 +7,7 @@ public record DatosRetornoRespuesta(
         String mensaje,
         LocalDateTime fechaCreacion,
         String nombreAutor,
-        String tituloTopico
+        String tituloTopico,
+        Boolean solucion
 ) {
 }
