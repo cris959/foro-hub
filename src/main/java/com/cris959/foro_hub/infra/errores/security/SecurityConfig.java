@@ -28,58 +28,34 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-//       return http
-//                .csrf(AbstractHttpConfigurer::disable)
-//                // Es vital establecer la política STATELESS para JWT
-//                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-//                .authorizeHttpRequests(auth -> auth
-//                        // 1. Recursos públicos (Swagger)
-//                        .requestMatchers(
-//                                "/v3/api-docs/**",
-//                                "/swagger-ui/**",
-//                                "/swagger-ui.html",
-//                                "/webjars/**"
-//                        ).permitAll()
-//
-//                        // 2. Login público
-//                        .requestMatchers(HttpMethod.POST, "/login").permitAll()
-//
-//                        // 3. Reglas de Negocio (ADMIN)
-//                        .requestMatchers(HttpMethod.POST, "/api/usuarios").hasRole("ADMIN")
-//                        .requestMatchers(HttpMethod.PUT, "/api/usuarios").hasRole("ADMIN")
-//                        .requestMatchers(HttpMethod.DELETE, "/api/usuarios/{id}").hasRole("ADMIN")
-//
-//                        // 4. Reglas Generales (USER o ADMIN)
-//                        .requestMatchers("/api/**").hasAnyRole("USER", "ADMIN")
-//
-//                        // 5. Todo lo demás requiere autenticación
-//                        .anyRequest().authenticated()
-//                )
-//                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-//                .build(); // Retornamos la cadena de filtros construida
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // 1. PÚBLICO: Documentación y Login
+                        // 1. PÚBLICO
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/webjars/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/login").permitAll()
 
-                        // 2. SOLO ADMIN: Gestión de infraestructura (Usuarios, Perfiles, Cursos)
+                        // 2. LECTURA (Permitir a USER y ADMIN consultar antes de bloquear el resto)
+                        // Ponemos esto ARRIBA para que el GET no sea bloqueado por la regla de ADMIN
+                        .requestMatchers(HttpMethod.GET, "/api/cursos/**", "/api/topicos/**", "/api/respuestas/**").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/perfiles/**").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/usuarios/{id}").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/usuarios/buscar").hasAnyRole("USER", "ADMIN")
+
+                        // 3. CREACIÓN (USER y ADMIN)
+                        .requestMatchers(HttpMethod.POST, "/api/topicos/**", "/api/respuestas/**").hasAnyRole("USER", "ADMIN")
+
+                        // 4. SOLO ADMIN (Gestión y Moderación)
+                        // Ahora sí, cualquier otra operación (POST, PUT, DELETE) en estas rutas es solo ADMIN
                         .requestMatchers("/api/usuarios/**").hasRole("ADMIN")
                         .requestMatchers("/api/perfiles/**").hasRole("ADMIN")
                         .requestMatchers("/api/cursos/**").hasRole("ADMIN")
-
-                        // 3. TÓPICOS Y RESPUESTAS:
-                        // El ADMIN puede borrar o editar cualquier cosa
                         .requestMatchers(HttpMethod.DELETE, "/api/topicos/**", "/api/respuestas/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/topicos/**", "/api/respuestas/**").hasRole("ADMIN")
+                        .requestMatchers("/api/respuestas/*/solucion").hasRole("ADMIN")
 
-                        // El USER (y el ADMIN) pueden Crear y Leer
-                        .requestMatchers(HttpMethod.POST, "/api/topicos", "/api/respuestas").hasAnyRole("USER", "ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/api/topicos/**", "/api/respuestas/**").hasAnyRole("USER", "ADMIN")
-
-                        // 4. BLOQUEO TOTAL: Cualquier otra ruta no definida requiere estar logueado
+                        // 5. CIERRE
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)

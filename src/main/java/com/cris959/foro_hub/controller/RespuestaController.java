@@ -27,13 +27,13 @@ public class RespuestaController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<DatosRetornoRespuesta> registrar(@RequestBody @Valid DatosRegistroRespuesta datos, UriComponentsBuilder uriComponentsBuilder) {
         DatosRetornoRespuesta respuesta = respuestaService.registrar(datos);
 
         // Creamos la URL dinámica para la nueva respuesta
         URI url = uriComponentsBuilder.path("/respuestas/{id}").buildAndExpand(respuesta.id()).toUri();
-
+        System.out.println("Entrando al método registrar respuesta...");
         return ResponseEntity.created(url).body(respuesta);
     }
 
