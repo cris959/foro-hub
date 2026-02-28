@@ -45,7 +45,7 @@ public class Usuario implements UserDetails {
     public Collection<? extends GrantedAuthority> getAuthorities() {
         // Tomamos el nombre del perfil (ej: ADMIN) y lo convertimos en autoridad
         // Spring Security suele esperar el prefijo "ROLE_"
-        return List.of(new SimpleGrantedAuthority("ROLE_" + perfil.getNombre().name()));
+        return List.of(new SimpleGrantedAuthority(perfil.getNombre().name()));
     }
 
     @Override

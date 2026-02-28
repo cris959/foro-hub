@@ -6,6 +6,7 @@ import com.cris959.foro_hub.model.PerfilNombre;
 import com.cris959.foro_hub.service.IPerfilService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -13,7 +14,7 @@ import java.net.URI;
 import java.util.List;
 
 @RestController
-@RequestMapping("/perfiles")
+@RequestMapping("/api/perfiles")
 public class PerfilController {
 
     private final IPerfilService perfilService;
@@ -23,6 +24,7 @@ public class PerfilController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<DatosListaPerfil> registrar(@RequestBody @Valid DatosRegistroPerfil datos,
                                                       UriComponentsBuilder uriComponentsBuilder) {
         // 1. Guardamos el perfil a través del service
@@ -38,12 +40,14 @@ public class PerfilController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<List<DatosListaPerfil>> listar() {
         var perfiles = perfilService.listarPerfiles();
         return ResponseEntity.ok(perfiles);
     }
 
     @GetMapping("/nombre/{nombre}")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<DatosListaPerfil> buscarPorNombre(@PathVariable PerfilNombre nombre) {
         // Spring convertirá automáticamente el String de la URL al Enum PerfilNombre
         var perfil = perfilService.buscarPorNombre(nombre);

@@ -6,8 +6,8 @@ import com.cris959.foro_hub.dto.DatosRespuestaUsuario;
 import com.cris959.foro_hub.service.IUsuarioService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -15,7 +15,7 @@ import java.net.URI;
 import java.util.List;
 
 @RestController
-@RequestMapping("/usuarios")
+@RequestMapping("/api/usuarios")
 //@Validated // Esto permite validar @RequestParam y @PathVariable
 public class UsuarioController {
 
@@ -26,6 +26,7 @@ public class UsuarioController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<DatosRespuestaUsuario> registrar(@RequestBody @Valid DatosRegistroUsuario datos,
                                                            UriComponentsBuilder uriComponentsBuilder) {
         // Llamamos al servicio (que usa el mapper y el repositorio)
@@ -37,18 +38,21 @@ public class UsuarioController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<DatosRespuestaUsuario> detallarUsuario(@PathVariable Long id) {
         var usuario = usuarioService.obtenerPorId(id);
         return ResponseEntity.ok(usuario);
     }
 
     @GetMapping("/buscar")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<DatosRespuestaUsuario> buscarPorEmail(@RequestParam String email) {
         var usuario = usuarioService.buscarPorEmail(email);
         return ResponseEntity.ok(usuario);
     }
 
     @PutMapping
+    @PreAuthorize("hasAnyRole('ADMIN')")
     @Transactional
     public ResponseEntity actualizar(@RequestBody @Valid DatosActualizarUsuario datos) {
         var usuarioActualizado = usuarioService.actualizar(datos);
@@ -56,6 +60,7 @@ public class UsuarioController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     @Transactional
     public ResponseEntity eliminar(@PathVariable Long id) {
         usuarioService.eliminar(id);
@@ -63,6 +68,7 @@ public class UsuarioController {
     }
 
     @PostMapping("/{id}/activar")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     @Transactional
     public ResponseEntity activar(@PathVariable Long id) {
         usuarioService.activar(id);
@@ -70,6 +76,7 @@ public class UsuarioController {
     }
 
     @GetMapping("/inactivos")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<List<DatosRespuestaUsuario>> listarInactivos() {
         var lista = usuarioService.listarInactivos();
         return ResponseEntity.ok(lista);

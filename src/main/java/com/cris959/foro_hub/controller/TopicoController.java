@@ -9,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -16,7 +17,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.util.List;
 
 @RestController
-@RequestMapping("/topicos")
+@RequestMapping("/api/topicos")
 public class TopicoController {
 
     private final ITopicoService topicoService;
@@ -27,6 +28,7 @@ public class TopicoController {
 
     // POST: Crear un nuevo tópico
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<DatosRespuestaTopico> registrar(@RequestBody @Valid DatosRegistroTopico datos, UriComponentsBuilder uriBuilder) {
         var topicoResponse = topicoService.crear(datos);
         var uri = uriBuilder.path("/topicos/{id}").buildAndExpand(topicoResponse.id()).toUri();
@@ -35,18 +37,21 @@ public class TopicoController {
 
     // GET: Listar tópicos con paginación
     @GetMapping
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<Page<DatosRespuestaTopico>> listar(@PageableDefault(size = 10, sort = {"fechaCreacion"}) Pageable paginacion) {
         return ResponseEntity.ok(topicoService.listar(paginacion));
     }
 
     // GET: Buscar un tópico por ID
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<DatosRespuestaTopico> buscarPorId(@PathVariable Long id) {
         return ResponseEntity.ok(topicoService.buscarPorId(id));
     }
 
     // PUT: Actualizar un tópico
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     @Transactional
     public ResponseEntity<DatosRespuestaTopico> actualizar(@PathVariable Long id,
                                                            @RequestBody @Valid DatosActualizarTopico datos) {
@@ -56,6 +61,7 @@ public class TopicoController {
 
     // DELETE: Eliminar un tópico
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     @Transactional
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
         topicoService.eliminar(id);
@@ -63,11 +69,13 @@ public class TopicoController {
     }
 
     @GetMapping("/historial")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<List<DatosRespuestaTopico>> listarActivoEInactivos() {
         return ResponseEntity.ok(topicoService.listarTodoElHistorial());
     }
 
     @PostMapping("/{id}/activar")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     @Transactional
     public ResponseEntity activar(@PathVariable Long id) {
         topicoService.activar(id);

@@ -8,11 +8,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
 @RestController
-@RequestMapping("/cursos")
+@RequestMapping("/api/cursos")
 public class CursoController {
 
     private final ICursoService cursoService;
@@ -23,6 +24,7 @@ public class CursoController {
 
     // POST: Crear un nuevo curso
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<DatosRespuestaCurso> registrar(@RequestBody @Valid DatosRegistroCurso datos, UriComponentsBuilder uriBuilder) {
         DatosRespuestaCurso cursoResponse = cursoService.registrar(datos);
         var uri = uriBuilder.path("/cursos/{id}").buildAndExpand(cursoResponse.id()).toUri();
@@ -31,18 +33,21 @@ public class CursoController {
 
     // GET: Listar cursos activos con paginación
     @GetMapping
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<Page<DatosRespuestaCurso>> listar(@PageableDefault(size = 10, sort = {"nombre"}) Pageable paginacion) {
         return ResponseEntity.ok(cursoService.listar(paginacion));
     }
 
     // GET: Buscar curso por ID
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<DatosRespuestaCurso> buscarPorId(@PathVariable Long id) {
         return ResponseEntity.ok(cursoService.buscarPorId(id));
     }
 
     // DELETE: Borrado lógico de un curso
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
         cursoService.eliminar(id);
         return ResponseEntity.noContent().build();
