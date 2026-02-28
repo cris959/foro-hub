@@ -7,6 +7,12 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import java.util.Collection;
+import java.util.List;
 
 
 @Entity(name = "Usuario")
@@ -16,7 +22,7 @@ import org.hibernate.annotations.Where;
 @Table(name = "usuarios")
 @SQLDelete(sql = "UPDATE usuarios SET activo = 0 WHERE id = ?") // Opcional: automatiza el borrado lógico
 @Where(clause = "activo = 1") // Filtra automáticamente todos los SELECT
-public class Usuario {
+public class Usuario implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,4 +40,40 @@ public class Usuario {
     @ManyToOne(fetch = FetchType.EAGER) // EAGER para tener el rol disponible al autenticar
     @JoinColumn(name = "perfil_id")
     private Perfil perfil;
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        // Tomamos el nombre del perfil (ej: ADMIN) y lo convertimos en autoridad
+        // Spring Security suele esperar el prefijo "ROLE_"
+        return List.of(new SimpleGrantedAuthority("ROLE_" + perfil.getNombre().name()));
+    }
+
+    @Override
+    public String getUsername() {
+        return email;
+    }
+    @Override
+    public String getPassword() {
+        return password;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
 }
