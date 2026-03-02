@@ -6,9 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.SoftDelete;
 import org.hibernate.annotations.Where;
-import org.hibernate.type.NumericBooleanConverter;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;

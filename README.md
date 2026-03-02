@@ -151,3 +151,139 @@ graph LR
     ADMIN ==> Foro
     USER ==> Foro
 ```
+
+```mermaid
+graph TD
+    A[POST login] --> B[AuthenticationManager]
+    B --> C[UserDetailsService]
+    C --> D[UsuarioRepository]
+    D --> E[PasswordEncoder matches]
+    E -->|OK| F[JWT Token]
+    E -->|FAIL| G[401 Unauthorized]
+    F --> H[200 OK]
+```
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Controller
+    participant AuthManager
+    participant UserDetails
+    participant Repository
+    participant PasswordEncoder
+    participant JWTProvider
+    participant Response
+    
+    Client->>Controller: POST /login {email, password}
+    Controller->>AuthManager: authenticate(token)
+    AuthManager->>UserDetails: loadUserByUsername(email)
+    UserDetails->>Repository: findByEmail(email)
+    Repository->>PasswordEncoder: matches(raw, encoded)
+    alt Credenciales Válidas
+        PasswordEncoder-->>AuthManager: OK
+        AuthManager->>JWTProvider: generateToken(usuario)
+        JWTProvider-->>Controller: JWT Token
+        Controller-->>Client: 200 {jwtToken}
+    else Credenciales Inválidas
+        PasswordEncoder-->>AuthManager: FAIL
+        AuthManager-->>Controller: BadCredentialsException
+        Controller-->>Client: 401 Unauthorized
+    end
+```
+
+sequenceDiagram
+participant Client
+participant Controller
+participant AuthManager
+participant UserDetails
+participant Repository
+participant PasswordEncoder
+participant JWTProvider
+participant Response
+[...diagram...]
+
+Flujo de autenticación estándar Spring Security + JWT:
+
+POST /login envía DatosAutenticacionUsuario (email, password)
+
+UsernamePasswordAuthenticationToken → AuthenticationManager.authenticate()
+
+Spring Security ejecuta:
+
+UserDetailsService.loadUserByUsername(email)
+
+PasswordEncoder.matches(passwordRaw, passwordEncoded)
+
+Éxito: jwtTokenProvider.generateToken(usuario) → DatosJWTToken
+
+Error: BadCredentialsException → 401 Unauthorized
+
+Características:
+
+✅ Passwords codificados con BCryptPasswordEncoder
+
+✅ JWT stateless (sin sesiones)
+
+✅ Roles en JWT para @PreAuthorize
+
+✅ Automático con Spring Security chain
+
+Uso: Bearer {jwtToken} en headers de endpoints protegidos.
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant LoginCtrl
+    participant TopicoCtrl
+    participant RespuestaCtrl
+    participant Service
+    participant Repository
+    participant DB
+    
+    Note over Client,DB: 1. AUTENTICACIÓN
+    Client->>+LoginCtrl: POST /login {email,pass}
+    LoginCtrl->>+Service: authenticate()
+    Service->>+Repository: findByEmail()
+    Repository->>+DB: SELECT usuario
+    DB-->>-Repository: Usuario
+    Repository-->>-Service: Usuario
+    Service-->>-LoginCtrl: JWT Token
+    LoginCtrl-->>-Client: 200 {jwtToken}
+    
+    Note over Client,DB: 2. CREAR TÓPICO
+    Client->>+TopicoCtrl: POST /topicos<br/>Bearer {JWT}
+    TopicoCtrl->>+Service: crear(DatosRegistroTopico)
+    Service->>+Repository: findById(autorId, cursoId)
+    Repository->>+DB: SELECT usuario, curso
+    DB-->>-Repository: Entidades
+    Repository-->>-Service: autor, curso
+    Service->>+Repository: save(Topico)
+    Repository->>+DB: INSERT topico
+    DB-->>-Repository: Topico saved
+    Repository-->>-Service: Topico
+    Service-->>-TopicoCtrl: DatosRespuestaTopico
+    TopicoCtrl-->>-Client: 201 {topico}
+    
+    Note over Client,DB: 3. CREAR RESPUESTA
+    Client->>+RespuestaCtrl: POST /respuestas<br/>Bearer {JWT}
+    RespuestaCtrl->>+Service: registrar(DatosRegistroRespuesta)
+    Service->>+Repository: findById(topicoId)
+    Repository->>+DB: SELECT topico
+    DB-->>-Repository: Topico
+    Service->>+Repository: save(Respuesta)
+    Repository->>+DB: INSERT respuesta
+    DB-->>-Repository: Respuesta
+    Repository-->>-Service: Respuesta
+    Service-->>-RespuestaCtrl: DatosRetornoRespuesta
+    RespuestaCtrl-->>-Client: 201 {respuesta}
+    
+    Note over Client,DB: 4. LISTAR (Paginado)
+    Client->>+TopicoCtrl: GET /topicos?page=0
+    TopicoCtrl->>+Service: listar(Pageable)
+    Service->>+Repository: findByActivoTrue(pageable)
+    Repository->>+DB: SELECT paginado
+    DB-->>-Repository: Page<Topico>
+    Repository-->>-Service: Page<DTO>
+    Service-->>-TopicoCtrl: Page<DatosRespuestaTopico>
+    TopicoCtrl-->>-Client: 200 {content:[], total=2}
+```

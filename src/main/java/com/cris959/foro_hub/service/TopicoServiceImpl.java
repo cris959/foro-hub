@@ -17,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 @Service
 public class TopicoServiceImpl implements ITopicoService {
@@ -138,8 +137,6 @@ public class TopicoServiceImpl implements ITopicoService {
                 .orElseThrow(()-> new EntityNotFoundException("No se encontró el topico con ID: " + id));
 
         topico.setActivo(true);
-
-
     }
 
     @Override

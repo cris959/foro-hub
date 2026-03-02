@@ -28,13 +28,6 @@ public class CursoServiceImpl implements ICursoService{
     @Override
     @Transactional
     public DatosRespuestaCurso registrar(DatosRegistroCurso datos) {
-//        var curso = new Curso();
-//        curso.setNombre(datos.nombre());
-//        curso.setCategoria(datos.categoria());
-//        curso.setActivo(true);
-//
-//        cursoRepository.save(curso);
-//        return cursoMapper.toResponseDTO(curso);
         // Validamos antes de intentar insertar
         if (cursoRepository.existsByNombreAndCategoria(datos.nombre(), datos.categoria())) {
             throw new ValidacionException("Ya existe un curso con ese nombre.");
@@ -74,5 +67,4 @@ public class CursoServiceImpl implements ICursoService{
         curso.setActivo(false);
         cursoRepository.save(curso);
     }
-
 }

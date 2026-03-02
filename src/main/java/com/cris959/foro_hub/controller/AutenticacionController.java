@@ -12,13 +12,16 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 @Tag(
         name = "Autenticación",
@@ -49,15 +52,19 @@ public class AutenticacionController {
             @ApiResponse(responseCode = "400", description = "Datos de login inválidos")
     })
     @PostMapping
-    public ResponseEntity autenticar(@RequestBody @Valid DatosAutenticacionUsuario datos) {
-        // Esta llamada dispara el proceso de Spring Security
-        var authenticationToken = new UsernamePasswordAuthenticationToken(datos.email(), datos.password());
+    public ResponseEntity<DatosJWTToken> autenticar(@RequestBody @Valid DatosAutenticacionUsuario datos) {
+       try {
+           // Esta llamada dispara el proceso de Spring Security
+           var authenticationToken = new UsernamePasswordAuthenticationToken(datos.email(), datos.password());
 
-        // Aquí es donde ocurre el StackOverflow si hay dependencias circulares
-        var usuarioAutenticado = authenticationManager.authenticate(authenticationToken);
+           // Aquí es donde ocurre el StackOverflow si hay dependencias circulares
+           var usuarioAutenticado = authenticationManager.authenticate(authenticationToken);
 
-        var JWTtoken = jwtTokenProvider.generateToken((Usuario) usuarioAutenticado.getPrincipal());
+           var JWTtoken = jwtTokenProvider.generateToken((Usuario) usuarioAutenticado.getPrincipal());
 
-        return ResponseEntity.ok(new DatosJWTToken(JWTtoken));
+           return ResponseEntity.ok(new DatosJWTToken(JWTtoken));
+       } catch (BadCredentialsException e) {
+           throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Credenciales inválidas!");
+       }
     }
 }
