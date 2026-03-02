@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
+@Schema(description = "Datos para actualizar usuario (PATCH/PUT)")
 public record DatosActualizarUsuario(
 //        @NotNull(message = "El ID es obligatorio para actualizar")
 //        Long id,
