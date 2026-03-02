@@ -1,4 +1,4 @@
-package com.cris959.foro_hub.infra.errores.security;
+package com.cris959.foro_hub.infra.security;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;

@@ -2,7 +2,7 @@ package com.cris959.foro_hub.service;
 
 import com.cris959.foro_hub.dto.DatosListaPerfil;
 import com.cris959.foro_hub.dto.DatosRegistroPerfil;
-import com.cris959.foro_hub.infra.errores.ValidacionException;
+import com.cris959.foro_hub.infra.exception.ValidacionException;
 import com.cris959.foro_hub.mapper.PerfilMapper;
 import com.cris959.foro_hub.model.Perfil;
 import com.cris959.foro_hub.model.PerfilNombre;
@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class PerfilServiceImpl implements IPerfilService{

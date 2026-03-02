@@ -3,12 +3,13 @@ package com.cris959.foro_hub.service;
 import com.cris959.foro_hub.dto.DatosActualizarUsuario;
 import com.cris959.foro_hub.dto.DatosRegistroUsuario;
 import com.cris959.foro_hub.dto.DatosRespuestaUsuario;
-import com.cris959.foro_hub.infra.errores.ValidacionException;
+import com.cris959.foro_hub.infra.exception.ValidacionException;
 import com.cris959.foro_hub.mapper.UsuarioMapper;
 import com.cris959.foro_hub.model.Usuario;
 import com.cris959.foro_hub.repository.PerfilRepository;
 import com.cris959.foro_hub.repository.UsuarioRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,10 +24,13 @@ public class UsuarioServiceImpl implements IUsuarioService{
 
     private final UsuarioMapper usuarioMapper;
 
-    public UsuarioServiceImpl(UsuarioRepository usuarioRepository, PerfilRepository perfilRepository, UsuarioMapper usuarioMapper) {
+    private final PasswordEncoder passwordEncoder;
+
+    public UsuarioServiceImpl(UsuarioRepository usuarioRepository, PerfilRepository perfilRepository, UsuarioMapper usuarioMapper, PasswordEncoder passwordEncoder) {
         this.usuarioRepository = usuarioRepository;
         this.perfilRepository = perfilRepository;
         this.usuarioMapper = usuarioMapper;
+        this.passwordEncoder = passwordEncoder;
     }
 
 
@@ -44,7 +48,7 @@ public class UsuarioServiceImpl implements IUsuarioService{
         Usuario usuario = new Usuario();
         usuario.setNombre(datos.nombre());
         usuario.setEmail(datos.email());
-        usuario.setPassword(datos.password());
+        usuario.setPassword(passwordEncoder.encode(datos.password()));
         usuario.setPerfil(perfil);
 
         usuarioRepository.save(usuario);
@@ -74,29 +78,29 @@ public class UsuarioServiceImpl implements IUsuarioService{
 
     @Override
     @Transactional
-    public DatosRespuestaUsuario actualizar(DatosActualizarUsuario datos) {
+    public DatosRespuestaUsuario actualizar(Long id, DatosActualizarUsuario datos) {
         // 1. Buscamos al usuario o lanzamos error si no existe (404)
-        var usuario = usuarioRepository.findById(datos.id())
-                .orElseThrow(() -> new EntityNotFoundException("No se encontró el usuario con ID: " + datos.id()));
+        var usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new ValidacionException("Usuario no encontrado"));
 
         // 2. Actualizamos solo los campos que no vienen nulos en el DTO
-        if (datos.nombre() != null && !datos.nombre().isBlank()) {
-            usuario.setNombre(datos.nombre());
+        if (datos.nombre() != null && !datos.nombre().trim().isBlank()) {
+            usuario.setNombre(datos.nombre().trim());
         }
 
-        if (datos.password() != null && !datos.password().isBlank()) {
-            // Aquí podrías agregar tu lógica de BCrypt para encriptar
-            usuario.setPassword(datos.password());
+        if (datos.password() != null && !datos.password().trim().isBlank()) {
+            usuario.setPassword(passwordEncoder.encode(datos.password().trim()));
         }
 
         if (datos.perfilId() != null) {
             var perfil = perfilRepository.findById(datos.perfilId())
-                    .orElseThrow(() -> new EntityNotFoundException("El perfil asignado no existe"));
+                    .orElseThrow(() -> new ValidacionException("El perfil asignado no existe"));
             usuario.setPerfil(perfil);
         }
 
         // 3. Convertimos la entidad actualizada a DTO de respuesta
-        return usuarioMapper.toDatosRespuestaUsuario(usuario);
+        usuario.setActivo(datos.activo());
+        return usuarioMapper.toDatosRespuestaUsuario(usuarioRepository.save(usuario));
     }
 
     @Override

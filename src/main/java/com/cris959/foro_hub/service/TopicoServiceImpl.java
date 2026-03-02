@@ -3,7 +3,7 @@ package com.cris959.foro_hub.service;
 import com.cris959.foro_hub.dto.DatosActualizarTopico;
 import com.cris959.foro_hub.dto.DatosRegistroTopico;
 import com.cris959.foro_hub.dto.DatosRespuestaTopico;
-import com.cris959.foro_hub.infra.errores.ValidacionException;
+import com.cris959.foro_hub.infra.exception.ValidacionException;
 import com.cris959.foro_hub.mapper.TopicoMapper;
 import com.cris959.foro_hub.model.Topico;
 import com.cris959.foro_hub.repository.CursoRepository;
@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Service
 public class TopicoServiceImpl implements ITopicoService {
@@ -87,20 +88,25 @@ public class TopicoServiceImpl implements ITopicoService {
     @Transactional
     public DatosRespuestaTopico actualizar(Long id, DatosActualizarTopico datos) {
         var topico = topicoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Topico no encontrado"));
+                .orElseThrow(() -> new ValidacionException("Tópico no encontrado con ID: " + id));
 
         if (!topico.getActivo()) {
-            throw new ValidacionException("No se puede editar un tópico eliminado.");
+            throw new ValidacionException("No se puede editar un tópico inactivo.");
         }
 
-        // Actualizamos solo lo permitido
-        if (datos.titulo() != null && !datos.titulo().isBlank()) {
-            topico.setTitulo(datos.titulo());
+
+        // Actualización SIMPLE (usa @NotBlank del DTO)
+        if (datos.titulo() != null && !datos.titulo().trim().isBlank()) {
+            topico.setTitulo(datos.titulo().trim());
         }
-        if (datos.mensaje() != null && !datos.mensaje().isBlank()) {
-            topico.setMensaje(datos.mensaje());
+        if (datos.mensaje() != null && !datos.mensaje().trim().isBlank()) {
+            topico.setMensaje(datos.mensaje().trim());
         }
 
+        // Estado siempre (DTO tiene @NotNull)
+        topico.setActivo(datos.activo());
+
+        topicoRepository.save(topico);
         return topicoMapper.toResponseDTO(topico);
     }
 

@@ -1,4 +1,4 @@
-package com.cris959.foro_hub.infra.errores.security;
+package com.cris959.foro_hub.infra.security;
 
 import com.cris959.foro_hub.model.Usuario;
 import io.jsonwebtoken.Claims;

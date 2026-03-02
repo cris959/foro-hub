@@ -1,4 +1,4 @@
-package com.cris959.foro_hub.infra.errores;
+package com.cris959.foro_hub.infra.exception;
 
 public record DatosErrorValidacion(
         String campo,

@@ -13,7 +13,7 @@ public interface IUsuarioService {
 
     DatosRespuestaUsuario buscarPorEmail(String email);
 
-    DatosRespuestaUsuario actualizar(DatosActualizarUsuario datos);
+    DatosRespuestaUsuario actualizar(Long id, DatosActualizarUsuario datos);
 
     void eliminar(Long id);
 

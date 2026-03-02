@@ -2,7 +2,7 @@ package com.cris959.foro_hub.service;
 
 import com.cris959.foro_hub.dto.DatosRegistroRespuesta;
 import com.cris959.foro_hub.dto.DatosRetornoRespuesta;
-import com.cris959.foro_hub.infra.errores.ValidacionException;
+import com.cris959.foro_hub.infra.exception.ValidacionException;
 import com.cris959.foro_hub.mapper.RespuestaMapper;
 import com.cris959.foro_hub.model.Respuesta;
 import com.cris959.foro_hub.model.StatusTopico;

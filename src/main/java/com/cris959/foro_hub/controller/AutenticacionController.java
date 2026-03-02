@@ -2,8 +2,14 @@ package com.cris959.foro_hub.controller;
 
 import com.cris959.foro_hub.dto.DatosAutenticacionUsuario;
 import com.cris959.foro_hub.dto.DatosJWTToken;
-import com.cris959.foro_hub.infra.errores.security.JwtTokenProvider;
+import com.cris959.foro_hub.infra.security.JwtTokenProvider;
 import com.cris959.foro_hub.model.Usuario;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +20,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@Tag(
+        name = "Autenticación",
+        description = "Endpoint público de login. Genera JWT token para acceder a APIs protegidas."
+)
 @RestController
 @RequestMapping("/login")
 public class AutenticacionController {
@@ -24,6 +34,20 @@ public class AutenticacionController {
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
 
+    @Operation(
+            summary = "Iniciar sesión",
+            description = "Autentica usuario y retorna JWT Bearer token para APIs protegidas. **PÚBLICO** (sin token requerido)."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Login exitoso",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = DatosJWTToken.class))
+            ),
+            @ApiResponse(responseCode = "401", description = "Credenciales inválidas"),
+            @ApiResponse(responseCode = "400", description = "Datos de login inválidos")
+    })
     @PostMapping
     public ResponseEntity autenticar(@RequestBody @Valid DatosAutenticacionUsuario datos) {
         // Esta llamada dispara el proceso de Spring Security
