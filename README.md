@@ -287,3 +287,46 @@ sequenceDiagram
     Service-->>-TopicoCtrl: Page<DatosRespuestaTopico>
     TopicoCtrl-->>-Client: 200 {content:[], total=2}
 ```
+### Puntos clave del gráfico
+Separación de Intereses: El Service no sabe que existe un "Decorator", él solo le pide al Moderador que haga su trabajo.
+
+El Guardián: Observa cómo la base de datos está protegida por el bloque de decisión de la IA. Si la condición falla, la flecha nunca llega a la DB.
+
+Transparencia: El Decorator actúa como un "pasamanos" transparente entre el código y la API externa, cumpliendo su función de monitoreo sin alterar la lógica.
+
+```mermaid
+sequenceDiagram
+    participant Cliente as Postman / Frontend
+    participant Controller as RespuestaController
+    participant Service as RespuestaService
+    participant Moderador as ModeradorAI
+    participant Decorator as LoggingChatModelDecorator
+    participant Gemini as Google Gemini API
+    participant DB as Base de Datos
+
+    Cliente->>Controller: POST /respuestas (JSON)
+    Controller->>Service: registrar(datos)
+    
+    Note over Service, Gemini: Inicio Flujo de Inteligencia Artificial
+    
+    Service->>Moderador: esContenidoOfensivo(mensaje)
+    Moderador->>Decorator: call(Prompt)
+    Decorator->>Gemini: Petición (API Call)
+    Gemini-->>Decorator: Respuesta (Tokens + Contenido)
+    
+    Note right of Decorator: LOG Consumo: <br/>Tokens, Modelo, Tiempo
+    
+    Decorator-->>Moderador: ChatResponse
+    Moderador-->>Service: boolean (true/false)
+
+    alt esOfensivo == true
+        Service-->>Controller: throw ValidacionException
+        Controller-->>Cliente: 400 Bad Request (Mensaje bloqueado)
+    else esOfensivo == false
+        Note over Service, DB: Flujo de Persistencia
+        Service->>DB: Buscar Tópico y Autor
+        Service->>DB: save(Respuesta)
+        Service-->>Controller: DatosRetornoRespuesta
+        Controller-->>Cliente: 201 Created + URI
+    end
+```

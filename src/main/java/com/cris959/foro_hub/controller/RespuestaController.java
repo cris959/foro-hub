@@ -3,6 +3,7 @@ package com.cris959.foro_hub.controller;
 import com.cris959.foro_hub.dto.DatosRegistroRespuesta;
 import com.cris959.foro_hub.dto.DatosRetornoRespuesta;
 import com.cris959.foro_hub.service.IRespuestaService;
+import com.cris959.foro_hub.service.IRespuestaServiceIA;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -33,27 +34,36 @@ public class RespuestaController {
 
     private final IRespuestaService respuestaService;
 
-    public RespuestaController(IRespuestaService respuestaService) {
+    private final IRespuestaServiceIA  respuestaServiceIA;
+
+    public RespuestaController(IRespuestaService respuestaService, IRespuestaServiceIA respuestaServiceIA) {
         this.respuestaService = respuestaService;
+        this.respuestaServiceIA = respuestaServiceIA;
     }
 
     @Operation(
-            summary = "Crear respuesta",
-            description = "Registra respuesta para un tópico específico. USER/ADMIN. Retorna 201 con URL."
+            summary = "Crear respuesta con moderación de IA",
+            description = """
+                    Registra una respuesta para un tópico específico. 
+                    El contenido es analizado automáticamente por un modelo de IA (Gemini) 
+                    para detectar lenguaje ofensivo antes de ser guardado. 
+                    Requiere roles: USER o ADMIN.
+                    """
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "201", description = "Respuesta creada", content = @Content(mediaType = "application/json")),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
-            @ApiResponse(responseCode = "401", description = "No autorizado")
+            @ApiResponse(responseCode = "201", description = "Respuesta creada exitosamente"),
+            @ApiResponse(responseCode = "400", description = "Datos inválidos o contenido bloqueado por política de moderación (IA)"),
+            @ApiResponse(responseCode = "401", description = "No autorizado"),
+            @ApiResponse(responseCode = "404", description = "Tópico o Autor no encontrado")
     })
     @PostMapping
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<DatosRetornoRespuesta> registrar(@RequestBody @Valid DatosRegistroRespuesta datos, UriComponentsBuilder uriComponentsBuilder) {
-        DatosRetornoRespuesta respuesta = respuestaService.registrar(datos);
+        DatosRetornoRespuesta respuesta = respuestaServiceIA.registrar(datos);
 
         // Creamos la URL dinámica para la nueva respuesta
         URI url = uriComponentsBuilder.path("/respuestas/{id}").buildAndExpand(respuesta.id()).toUri();
-        System.out.println("Entrando al método registrar respuesta...");
+//        System.out.println("Entrando al procedimiento registrar respuesta...");
         return ResponseEntity.created(url).body(respuesta);
     }
 
