@@ -1,4 +1,4 @@
-package com.cris959.foro_hub.service;
+package com.cris959.foro_hub.service.impl;
 
 import com.cris959.foro_hub.dto.DatosActualizarUsuario;
 import com.cris959.foro_hub.dto.DatosRegistroUsuario;
@@ -8,6 +8,7 @@ import com.cris959.foro_hub.mapper.UsuarioMapper;
 import com.cris959.foro_hub.model.Usuario;
 import com.cris959.foro_hub.repository.PerfilRepository;
 import com.cris959.foro_hub.repository.UsuarioRepository;
+import com.cris959.foro_hub.service.IUsuarioService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -16,7 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
-public class UsuarioServiceImpl implements IUsuarioService{
+public class UsuarioServiceImpl implements IUsuarioService {
 
     private final UsuarioRepository usuarioRepository;
 

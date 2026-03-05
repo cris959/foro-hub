@@ -68,4 +68,18 @@ public class TratamientoDeErrores {
     public ResponseEntity tratarError400CuerpoVacio(org.springframework.http.converter.HttpMessageNotReadableException e) {
         return ResponseEntity.badRequest().body(new DatosErrorValidacion("cuerpo", "El cuerpo de la solicitud (JSON) no puede estar vacío."));
     }
+
+    @ExceptionHandler(Exception.class) // Captura general para depurar
+    public ResponseEntity tratarError503IA(Exception e) {
+        // Buscamos si en toda la cadena de errores aparece el 503 o la saturación
+        String mensajeCompleto = e.toString() + (e.getCause() != null ? e.getCause().toString() : "");
+
+        if (mensajeCompleto.contains("503") || mensajeCompleto.contains("high demand")) {
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                    .body(new DatosErrorIA("El servidor de IA está saturado. Intenta de nuevo en un momento."));
+        }
+
+        // Si no es IA, devolvemos el error 400 normal
+        return ResponseEntity.badRequest().body(e.getMessage());
+    }
 }

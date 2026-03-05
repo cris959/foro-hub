@@ -23,11 +23,21 @@ public class SpringDocConfiguration {
                                         .scheme("bearer")
                                         .bearerFormat("JWT")))
                 .info(new Info()
-                        .title("Foro Hub API")
-                        .description("API Rest de la aplicación Foro Hub, que contiene las funcionalidades de CRUD de tópicos y respuestas.")
-                        .version("1.0")
+                        .title("Foro Hub API- Moderación Inteligente")
+                        .description("""
+                           API REST para la gestión de tópicos y respuestas del Foro Hub.
+                            Características de Seguridad Avanzada:
+                           * Moderación AI: Integración con Google Gemini para análisis semántico de contenido ofensivo,
+                            spam y suplantación de identidad.
+                           * Sistema de Respaldo (Fallback): En caso de indisponibilidad de la IA, la API activa
+                            automáticamente un filtro heurístico local basado en puntuación de riesgo 
+                            (Score-based Moderation).
+                           * Protección JWT: Acceso seguro mediante tokens Bearer.
+                        """)
+
+                        .version("1.1 (AI-Enhanced)")
                         .contact(new Contact()
-                                .name("Equipo Backend")
+                                .name("Equipo Backend-Cris959")
                                 .email("backend@forohub.com"))
                         .license(new License()
                                 .name("Apache 2.0")

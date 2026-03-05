@@ -1,4 +1,4 @@
-package com.cris959.foro_hub.service;
+package com.cris959.foro_hub.service.impl;
 
 import com.cris959.foro_hub.dto.DatosListaPerfil;
 import com.cris959.foro_hub.dto.DatosRegistroPerfil;
@@ -7,6 +7,7 @@ import com.cris959.foro_hub.mapper.PerfilMapper;
 import com.cris959.foro_hub.model.Perfil;
 import com.cris959.foro_hub.model.PerfilNombre;
 import com.cris959.foro_hub.repository.PerfilRepository;
+import com.cris959.foro_hub.service.IPerfilService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
-public class PerfilServiceImpl implements IPerfilService{
+public class PerfilServiceImpl implements IPerfilService {
 
         private final PerfilRepository perfilRepository;
 

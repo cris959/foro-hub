@@ -1,10 +1,15 @@
 package com.cris959.foro_hub.controller;
 
+import com.cris959.foro_hub.dto.AnalisisTendenciasResponse;
 import com.cris959.foro_hub.dto.DatosActualizarTopico;
 import com.cris959.foro_hub.dto.DatosRegistroTopico;
 import com.cris959.foro_hub.dto.DatosRespuestaTopico;
 import com.cris959.foro_hub.service.ITopicoService;
+import com.cris959.foro_hub.service.moderacion.ITopicoModeradorAI;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -13,6 +18,7 @@ import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,24 +37,36 @@ import java.util.List;
 public class TopicoController {
 
     private final ITopicoService topicoService;
+    private final ITopicoModeradorAI service;
 
-    public TopicoController(ITopicoService topicoService) {
+    public TopicoController(ITopicoService topicoService, ITopicoModeradorAI service) {
         this.topicoService = topicoService;
+        this.service = service;
     }
 
     // POST: Crear un nuevo tópico
     @Operation(
-            summary = "Registra un nuevo tópico",
-            description = "Crea un tópico vinculado a un usuario y un curso específicos.",
+            summary = "Registra un nuevo tópico con Moderación AI",
+            description = """
+                    Registra un tópico vinculado a un usuario y curso específicos.
+                    Capa de Seguridad Híbrida: 
+                    1. Principal: Análisis semántico mediante Inteligencia Artificial (Gemini).
+                    2. Respaldo (Fallback): Filtro heurístico local basado en puntuación de riesgo
+                     (Insultos, Spam, Suplantación) en caso de caída del servicio de IA o fallos de red.
+                    """,
             tags = { "tópicos" }
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Tópico creado exitosamente"),
-            @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos")
+            @ApiResponse(responseCode = "400", description = "Rechazado por reglas de moderación (IA o Respaldo Local)"),
+            @ApiResponse(responseCode = "401", description = "Usuario no autenticado"),
+            @ApiResponse(responseCode = "403", description = "Rol insuficiente (requiere USER o ADMIN)"),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
     @PostMapping
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    public ResponseEntity<DatosRespuestaTopico> registrar(@RequestBody @Valid DatosRegistroTopico datos, UriComponentsBuilder uriBuilder) {
+    public ResponseEntity<DatosRespuestaTopico> registrar(@RequestBody @Valid @Parameter
+                                                              DatosRegistroTopico datos, UriComponentsBuilder uriBuilder) {
         var topicoResponse = topicoService.crear(datos);
         var uri = uriBuilder.path("/topicos/{id}").buildAndExpand(topicoResponse.id()).toUri();
         return ResponseEntity.created(uri).body(topicoResponse);
@@ -105,11 +123,12 @@ public class TopicoController {
     // DELETE: Eliminar un tópico
     @Operation(
             summary = "Eliminar tópico",
-            description = "Borra tópico por ID. Solo ADMIN. Retorna 204."
+            description = "Marca tópico como eliminado (soft delete) por ID. Solo ADMIN. Retorna 204."
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "204", description = "Eliminado"),
-            @ApiResponse(responseCode = "404", description = "No encontrado")
+            @ApiResponse(responseCode = "204", description = "Tópico marcado como eliminado"),
+            @ApiResponse(responseCode = "403", description = "Acceso denegado - Solo ADMIN"),
+            @ApiResponse(responseCode = "404", description = "Tópico no encontrado")
     })
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN')")
@@ -146,5 +165,33 @@ public class TopicoController {
     public ResponseEntity activar(@PathVariable Long id) {
         topicoService.activar(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @Operation(
+            summary = "Obtener análisis de tendencias",
+            description = """
+        Analiza los tópicos recientes del foro usando **IA** para identificar las 3 tendencias principales 
+        con sugerencias de contenido. 
+        
+        **Sistema inteligente híbrido:**
+        • **Primario**: Análisis en tiempo real con IA
+        • **Backup**: Sistema local heurístico si IA no responde
+        
+        Devuelve JSON con `tendencias`, `sugerencia`, `fuente` (IA_ANALISIS|SISTEMA_LOCAL_BACKUP) y fecha.
+        """
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200",
+                    description = "Análisis exitoso",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = AnalisisTendenciasResponse.class))),
+            @ApiResponse(responseCode = "401", description = "No autenticado"),
+            @ApiResponse(responseCode = "403", description = "Acceso denegado")
+    })
+    @GetMapping(value = "/tendencias", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    public ResponseEntity<String> analizar() {
+        var jsonResponse = service.obtenerAnalisisDeTendencias().toString();
+        return ResponseEntity.ok(jsonResponse);
     }
 }

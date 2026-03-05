@@ -1,14 +1,18 @@
-package com.cris959.foro_hub.service;
+package com.cris959.foro_hub.service.impl;
 
 import com.cris959.foro_hub.dto.DatosActualizarTopico;
 import com.cris959.foro_hub.dto.DatosRegistroTopico;
 import com.cris959.foro_hub.dto.DatosRespuestaTopico;
+import com.cris959.foro_hub.dto.ResultadoModeracion;
 import com.cris959.foro_hub.infra.exception.ValidacionException;
+import com.cris959.foro_hub.infra.springai.ModeradorAI;
 import com.cris959.foro_hub.mapper.TopicoMapper;
 import com.cris959.foro_hub.model.Topico;
 import com.cris959.foro_hub.repository.CursoRepository;
 import com.cris959.foro_hub.repository.TopicoRepository;
 import com.cris959.foro_hub.repository.UsuarioRepository;
+import com.cris959.foro_hub.service.ITopicoService;
+import com.cris959.foro_hub.service.moderacion.ModeradorHeuristicoLocal;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -29,17 +33,23 @@ public class TopicoServiceImpl implements ITopicoService {
 
     private final TopicoMapper topicoMapper;
 
-    public TopicoServiceImpl(TopicoRepository topicoRepository, UsuarioRepository usuarioRepository, CursoRepository cursoRepository, TopicoMapper topicoMapper) {
+    private final ModeradorHeuristicoLocal moderadorLocal;
+
+    private final ModeradorAI moderadorAI;
+
+    public TopicoServiceImpl(TopicoRepository topicoRepository, UsuarioRepository usuarioRepository, CursoRepository cursoRepository, TopicoMapper topicoMapper, ModeradorHeuristicoLocal moderadorLocal, ModeradorAI moderadorAI) {
         this.topicoRepository = topicoRepository;
         this.usuarioRepository = usuarioRepository;
         this.cursoRepository = cursoRepository;
         this.topicoMapper = topicoMapper;
+        this.moderadorLocal = moderadorLocal;
+        this.moderadorAI = moderadorAI;
     }
 
     @Override
     @Transactional
     public DatosRespuestaTopico crear(DatosRegistroTopico datos) {
-        // 1. Validar duplicidad (Uso de tu nuevo método en el Repository)
+        // 1. Validar duplicidad (Uso de tu nuevo procedimiento en el Repository)
         if (topicoRepository.existsByTituloAndMensaje(datos.titulo(), datos.mensaje())) {
             throw new ValidacionException("No es posible crear tópicos duplicados. Ya existe un tópico con el mismo título y mensaje.");
         }
@@ -51,6 +61,28 @@ public class TopicoServiceImpl implements ITopicoService {
         // 3. Validar que el Curso exista
         var curso = cursoRepository.findById(datos.idCurso())
                 .orElseThrow(() -> new EntityNotFoundException("El curso con ID " + datos.idCurso() + " no existe."));
+
+        // 3.5. Moderación con Inteligencia Artificial (y respaldo Local)
+        boolean bloqueadoFinal = false;
+        String motivoFinal = "";
+
+        try {
+//            System.out.println("SISTEMA: Intentando moderación con AI...");
+            bloqueadoFinal = moderadorAI.esContenidoOfensivo(datos.mensaje(), String.valueOf(datos.idAutor()));
+            motivoFinal = "Bloqueado por Inteligencia Artificial (Gemini)";
+        } catch (Exception e) {
+            // ESTO SE EJECUTA SI NO HAY INTERNET
+//            System.out.println("ALERTA: IA fuera de línea. Entrando al RESPALDO LOCAL...");
+            ResultadoModeracion resultadoLocal = moderadorLocal.analizarTexto(datos.mensaje(), autor.getNombre());
+            bloqueadoFinal = resultadoLocal.bloqueado();
+            motivoFinal = "Bloqueado por Filtro Local. " + resultadoLocal.detalle();
+        }
+
+        // ESTA ES LA LÍNEA MÁS IMPORTANTE: Detiene el proceso si algo falló
+        if (bloqueadoFinal) {
+//            System.out.println("SISTEMA: Publicación RECHAZADA por: " + motivoFinal);
+            throw new ValidacionException("No se puede publicar: " + motivoFinal);
+        }
 
         // 4. Instanciar y configurar la Entidad
         Topico topico = new Topico();
@@ -134,7 +166,7 @@ public class TopicoServiceImpl implements ITopicoService {
     @Override
     public void activar(Long id) {
         var topico = topicoRepository.encontrarEliminadoPorId(id)
-                .orElseThrow(()-> new EntityNotFoundException("No se encontró el topico con ID: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("No se encontró el topico con ID: " + id));
 
         topico.setActivo(true);
     }

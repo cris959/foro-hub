@@ -1,4 +1,4 @@
-package com.cris959.foro_hub.service;
+package com.cris959.foro_hub.service.impl;
 
 import com.cris959.foro_hub.dto.DatosRegistroRespuesta;
 import com.cris959.foro_hub.dto.DatosRetornoRespuesta;
@@ -9,13 +9,12 @@ import com.cris959.foro_hub.model.StatusTopico;
 import com.cris959.foro_hub.repository.RespuestaRepository;
 import com.cris959.foro_hub.repository.TopicoRepository;
 import com.cris959.foro_hub.repository.UsuarioRepository;
+import com.cris959.foro_hub.service.IRespuestaService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-
 
 @Service
 public class RespuestaServiceImpl implements IRespuestaService {
@@ -89,6 +88,15 @@ public class RespuestaServiceImpl implements IRespuestaService {
     }
 
     @Override
+    @Transactional
+    public void eliminar(Long id) {
+        var respuesta = respuestaRepository.findById(id)
+                .orElseThrow(() -> new ValidacionException("La respuesta no existe o ya fue eliminada."));
+
+        respuesta.setActivo(false);
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public Page<DatosRetornoRespuesta> listarPorTopico(Long topicoId, Pageable paginacion) {
         // 1. Verificamos que el tópico existe para dar un error claro si el ID está mal
@@ -101,3 +109,5 @@ public class RespuestaServiceImpl implements IRespuestaService {
                 .map(respuestaMapper::toDatosRetorno);
     }
 }
+
+

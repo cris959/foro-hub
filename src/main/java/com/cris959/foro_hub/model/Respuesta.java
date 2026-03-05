@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.time.LocalDateTime;
 
@@ -13,6 +14,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "respuestas")
+@SQLRestriction("activo = 1") // <--- Solo traerá los activos (en MySQL 1 es true)
 public class Respuesta {
 
     @Id
@@ -25,6 +27,9 @@ public class Respuesta {
     private LocalDateTime fechaCreacion = LocalDateTime.now();
 
     private Boolean solucion = false; // Útil para marcar la respuesta correcta
+
+    @Column(nullable = false)
+    private Boolean activo = true;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "autor_id")
@@ -40,5 +45,8 @@ public class Respuesta {
         this.autor = autor;
         this.fechaCreacion = LocalDateTime.now();
         this.solucion = false;
+    }
+    public void desactivar() {
+        this.activo = false;
     }
 }

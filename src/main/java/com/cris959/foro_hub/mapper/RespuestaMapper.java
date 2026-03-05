@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 public class RespuestaMapper {
 
         public DatosRetornoRespuesta toDatosRetorno(Respuesta respuesta) {
-            if (respuesta == null) {
+            if (respuesta == null || (respuesta.getActivo() != null && !respuesta.getActivo())) {
                 return null;
             }
             return new DatosRetornoRespuesta(

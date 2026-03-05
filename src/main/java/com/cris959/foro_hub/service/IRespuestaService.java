@@ -15,4 +15,6 @@ public interface IRespuestaService {
     void marcarComoSolucion(Long id);
 
     Page<DatosRetornoRespuesta> listarTodas(Pageable paginacion);
+
+    void eliminar(Long id);
 }

@@ -1,4 +1,4 @@
-package com.cris959.foro_hub.service;
+package com.cris959.foro_hub.service.impl;
 
 import com.cris959.foro_hub.dto.DatosRegistroCurso;
 import com.cris959.foro_hub.dto.DatosRespuestaCurso;
@@ -6,13 +6,14 @@ import com.cris959.foro_hub.infra.exception.ValidacionException;
 import com.cris959.foro_hub.mapper.CursoMapper;
 import com.cris959.foro_hub.model.Curso;
 import com.cris959.foro_hub.repository.CursoRepository;
+import com.cris959.foro_hub.service.ICursoService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-public class CursoServiceImpl implements ICursoService{
+public class CursoServiceImpl implements ICursoService {
 
 
     private final CursoRepository cursoRepository;

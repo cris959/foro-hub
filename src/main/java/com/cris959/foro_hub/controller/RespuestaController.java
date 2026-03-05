@@ -3,9 +3,10 @@ package com.cris959.foro_hub.controller;
 import com.cris959.foro_hub.dto.DatosRegistroRespuesta;
 import com.cris959.foro_hub.dto.DatosRetornoRespuesta;
 import com.cris959.foro_hub.service.IRespuestaService;
-import com.cris959.foro_hub.service.IRespuestaServiceIA;
+import com.cris959.foro_hub.service.moderacion.IRespuestaModeradorIA;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -15,6 +16,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,27 +36,42 @@ public class RespuestaController {
 
     private final IRespuestaService respuestaService;
 
-    private final IRespuestaServiceIA  respuestaServiceIA;
+    private final IRespuestaModeradorIA respuestaServiceIA;
 
-    public RespuestaController(IRespuestaService respuestaService, IRespuestaServiceIA respuestaServiceIA) {
+    public RespuestaController(IRespuestaService respuestaService, IRespuestaModeradorIA respuestaServiceIA) {
         this.respuestaService = respuestaService;
         this.respuestaServiceIA = respuestaServiceIA;
     }
 
     @Operation(
-            summary = "Crear respuesta con moderación de IA",
+            summary = "Crear respuesta con moderación inteligente híbrida",
             description = """
-                    Registra una respuesta para un tópico específico. 
-                    El contenido es analizado automáticamente por un modelo de IA (Gemini) 
-                    para detectar lenguaje ofensivo antes de ser guardado. 
-                    Requiere roles: USER o ADMIN.
-                    """
+        Registra una respuesta para un tópico específico con **doble sistema de moderación**:
+        
+        **Sistema híbrido de seguridad:**
+        • **Primario**: IA (Gemini) analiza lenguaje ofensivo en tiempo real
+        • **Backup**: Validaciones heurísticas locales si IA no responde
+        
+        **Flujo completo:**
+        1. Validación DTO → 2. Moderación IA → 3. Guardado en BD → 4. Respuesta 201
+        
+        **Bloquea automáticamente:**
+        - Insultos, amenazas, contenido explícito
+        - SPAM detectado por IA
+        - `fuente_moderacion` en respuesta indica: "IA_GEMINI" | "BACKUP_LOCAL"
+        
+        Requiere: **USER** o **ADMIN**
+        """
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "201", description = "Respuesta creada exitosamente"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos o contenido bloqueado por política de moderación (IA)"),
-            @ApiResponse(responseCode = "401", description = "No autorizado"),
-            @ApiResponse(responseCode = "404", description = "Tópico o Autor no encontrado")
+            @ApiResponse(responseCode = "201",
+                    description = "Respuesta creada exitosamente tras pasar moderación IA",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = DatosRetornoRespuesta.class))),
+            @ApiResponse(responseCode = "400",
+                    description = "Datos inválidos O contenido bloqueado por IA/backup"),
+            @ApiResponse(responseCode = "401", description = "No autenticado"),
+            @ApiResponse(responseCode = "404", description = "Tópico o autor no encontrado")
     })
     @PostMapping
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
@@ -112,5 +129,20 @@ public class RespuestaController {
             @PageableDefault(size = 10, sort = "fechaCreacion", direction = Sort.Direction.DESC) Pageable paginacion) {
         var todasLasRespuestas = respuestaService.listarTodas(paginacion);
         return ResponseEntity.ok(todasLasRespuestas);
+    }
+
+    @Operation(
+            summary = "Elimina lógicamente una respuesta por ID",
+            description = "Marca la respuesta como eliminada (soft delete), sin removerla físicamente de la BD. Requiere rol ADMIN"
+    )
+    @ApiResponse(responseCode = "204", description = "Respuesta marcada como eliminada exitosamente")
+    @ApiResponse(responseCode = "403", description = "Acceso denegado - Requiere rol ADMIN")
+    @ApiResponse(responseCode = "404", description = "Respuesta no encontrada")
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN')")
+    @Transactional
+    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
+        respuestaService.eliminar(id);
+        return ResponseEntity.noContent().build();
     }
 }
