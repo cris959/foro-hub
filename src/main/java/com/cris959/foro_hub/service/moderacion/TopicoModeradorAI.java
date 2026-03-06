@@ -4,6 +4,8 @@ import com.cris959.foro_hub.infra.springai.ModeradorAI;
 import com.cris959.foro_hub.repository.TopicoRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Service
@@ -19,11 +21,14 @@ public class TopicoModeradorAI implements ITopicoModeradorAI {
     }
 
     public String obtenerAnalisisDeTendencias() {
+// 1. Obtener y formatear la hora local
+        String horaLocal = LocalDateTime.now()
+                .format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
 
         var titulos = topicoRepository.findAll().stream().map(t -> t.getTitulo()).toList();
 
         if (titulos.isEmpty()) {
-            return "{'mensaje': 'No hay datos.'}";
+            return "{'mensaje': 'No hay datos.', 'generado_en': '" + horaLocal + "'}";
         }
 
         int cantidad = Math.min(titulos.size(), 10);
@@ -31,7 +36,8 @@ public class TopicoModeradorAI implements ITopicoModeradorAI {
         List<String> muestra = titulos.subList(titulos.size() - cantidad, titulos.size());
 
         try {
-            return analistaIA.generarResumenEstadistico(muestra);
+            String resultadoIA = analistaIA.generarResumenEstadistico(muestra);
+            return resultadoIA;
         } catch (Exception e) {
             System.out.println("ALERTA: IA saturada. Iniciando analista de respaldo...");
             return generarAnalisisManual(muestra);

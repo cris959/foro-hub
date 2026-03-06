@@ -52,6 +52,7 @@ public class ModeradorAI {
         String systemText = """
                 Eres un analista de datos experto en comunidades tecnológicas.
                 Te proporcionaré una lista de títulos de tópicos de un foro.
+                "fecha_analisis": "%s"
                 Tu tarea es identificar los 3 temas más recurrentes y dar un breve consejo 
                 sobre qué contenido o curso debería crear el foro para ayudar a los usuarios.
                 RESPONDE SIEMPRE SOLO EN FORMATO JSON VÁLIDO con esta estructura exacta:
@@ -66,7 +67,8 @@ public class ModeradorAI {
                         - 'sugerencia': máximo 150 caracteres
                         - Incluye fecha actual en formato dd/MM/yyyy HH:mm
                         - NUNCA agregues texto fuera del JSON
-                """.formatted(fechaActual);
+                        Usa este valor: %s
+                """.formatted(fechaActual, fechaActual);
 
         String userText = "Títulos: " + String.join(", ", titulosTopicos);
 
