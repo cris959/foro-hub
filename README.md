@@ -431,7 +431,7 @@ ___
 El Foro Hub incorpora un sistema de moderación automatizada impulsado por Google Gemini AI, diseñado para garantizar un entorno colaborativo respetuoso y libre de contenido ofensivo.
 
 Reseña del Proceso:
-Validación Proactiva: Antes de persistir cualquier respuesta, el sistema intercepta el contenido y lo somete a un análisis de sentimiento y lenguaje mediante el ModeradorAI.
+Validación Proactiva: Antes de persistir cualquier respuesta, el sistema intercepta el contenido y lo somete a un análisis de sentimiento y lenguaje mediante el ModeratorAI.
 
 Patrón Decorator para Observabilidad: Se implementó un LoggingChatModelDecorator que envuelve las llamadas a la API de IA. Esto permite registrar en tiempo real métricas críticas como:
 
@@ -448,7 +448,7 @@ sequenceDiagram
     participant Cliente as Postman / Frontend
     participant Controller as RespuestaController
     participant Service as RespuestaService
-    participant Moderador as ModeradorAI
+    participant Moderador as ModeratorAI
     participant Decorator as LoggingChatModelDecorator
     participant Gemini as Google Gemini API
     participant DB as Base de Datos

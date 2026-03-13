@@ -12,7 +12,7 @@ import com.cris959.foro_hub.repository.CursoRepository;
 import com.cris959.foro_hub.repository.TopicoRepository;
 import com.cris959.foro_hub.repository.UsuarioRepository;
 import com.cris959.foro_hub.service.ITopicoService;
-import com.cris959.foro_hub.service.moderacion.ModeradorHeuristicoLocal;
+import com.cris959.foro_hub.service.heuristica.ModeradorHeuristicoLocal;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -49,58 +49,35 @@ public class TopicoServiceImpl implements ITopicoService {
     @Override
     @Transactional
     public DatosRespuestaTopico crear(DatosRegistroTopico datos) {
-        // 1. Validar duplicidad (Uso de tu nuevo procedimiento en el Repository)
+        // 1. Validar duplicidad
         if (topicoRepository.existsByTituloAndMensaje(datos.titulo(), datos.mensaje())) {
-            throw new ValidacionException("No es posible crear tópicos duplicados. Ya existe un tópico con el mismo título y mensaje.");
+            throw new ValidacionException("No es posible crear tópicos duplicados.");
         }
 
-        // 2. Validar que el Autor exista (Uso de orElseThrow para evitar el .get() peligroso)
+        // 2. Validar entidades
         var autor = usuarioRepository.findById(datos.idAutor())
-                .orElseThrow(() -> new EntityNotFoundException("El autor con ID " + datos.idAutor() + " no existe en el sistema."));
-
-        // 3. Validar que el Curso exista
+                .orElseThrow(() -> new EntityNotFoundException("Autor no existe"));
         var curso = cursoRepository.findById(datos.idCurso())
-                .orElseThrow(() -> new EntityNotFoundException("El curso con ID " + datos.idCurso() + " no existe."));
+                .orElseThrow(() -> new EntityNotFoundException("Curso no existe"));
 
-        // 3.5. Moderación con Inteligencia Artificial (y respaldo Local)
-        boolean bloqueadoFinal = false;
-        String motivoFinal = "";
+        // UNA LLAMADA → ModeradorAI maneja procedimiento (Gemini/Mistral/Heurístico)
+        ResultadoModeracion moderacion = moderadorAI.esContenidoOfensivo(datos.mensaje(), autor.getNombre());
 
-        try {
-//            System.out.println("SISTEMA: Intentando moderación con AI...");
-            bloqueadoFinal = moderadorAI.esContenidoOfensivo(datos.mensaje(), String.valueOf(datos.idAutor()));
-            motivoFinal = "Bloqueado por Inteligencia Artificial (Gemini)";
-        } catch (Exception e) {
-            // ESTO SE EJECUTA SI NO HAY INTERNET
-//            System.out.println("ALERTA: IA fuera de línea. Entrando al RESPALDO LOCAL...");
-            ResultadoModeracion resultadoLocal = moderadorLocal.analizarTexto(datos.mensaje(), autor.getNombre());
-            bloqueadoFinal = resultadoLocal.bloqueado();
-            motivoFinal = "Bloqueado por Filtro Local. " + resultadoLocal.detalle();
+        if (moderacion.bloqueado()) {
+            throw new ValidacionException(
+                    moderacion.fuente() + ": " + moderacion.detalle());
         }
 
-        // ESTA ES LA LÍNEA MÁS IMPORTANTE: Detiene el proceso si algo falló
-        if (bloqueadoFinal) {
-//            System.out.println("SISTEMA: Publicación RECHAZADA por: " + motivoFinal);
-            throw new ValidacionException("No se puede publicar: " + motivoFinal);
-        }
-
-        // 4. Instanciar y configurar la Entidad
+        // 3. Crear y guardar
         Topico topico = new Topico();
         topico.setTitulo(datos.titulo());
         topico.setMensaje(datos.mensaje());
         topico.setAutor(autor);
         topico.setCurso(curso);
-
-        // El estado (StatusTopico) y la fecha de creación se asignan por defecto en la Entidad
-        // topico.setActivo(true); // Ya viene por defecto en tu entidad
-
-        // 5. Persistir en la base de datos
         topicoRepository.save(topico);
 
-        // 6. Retornar el DTO usando el Mapper blindado contra nulos
         return topicoMapper.toResponseDTO(topico);
     }
-
     @Override
     @Transactional(readOnly = true)
     public Page<DatosRespuestaTopico> listar(Pageable paginacion) {

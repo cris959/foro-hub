@@ -88,6 +88,15 @@
 			<scope>runtime</scope>
 			<optional>true</optional>
 		</dependency>
+
+
+		<dependency>
+			<groupId>org.springframework.ai</groupId>
+			<artifactId>spring-ai-mistral-ai-spring-boot-starter</artifactId>
+			<version>1.0.0-M5</version>
+		</dependency>
+
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
@@ -147,4 +156,3 @@
 		</repository>
 	</repositories>
 </project>
-

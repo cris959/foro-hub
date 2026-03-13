@@ -2,14 +2,18 @@ package com.cris959.foro_hub.service.moderacion;
 
 import com.cris959.foro_hub.dto.DatosRegistroRespuesta;
 import com.cris959.foro_hub.dto.DatosRetornoRespuesta;
+import com.cris959.foro_hub.dto.ResultadoModeracion;
 import com.cris959.foro_hub.infra.exception.ValidacionException;
 import com.cris959.foro_hub.infra.springai.ModeradorAI;
 import com.cris959.foro_hub.model.Respuesta;
 import com.cris959.foro_hub.repository.RespuestaRepository;
 import com.cris959.foro_hub.repository.TopicoRepository;
 import com.cris959.foro_hub.repository.UsuarioRepository;
+import com.cris959.foro_hub.service.heuristica.ModeradorHeuristicoLocal;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
 
 @Service
 public class RespuestaModeradorAI implements IRespuestaModeradorIA {
@@ -37,35 +41,32 @@ public class RespuestaModeradorAI implements IRespuestaModeradorIA {
     @Transactional
     public DatosRetornoRespuesta registrar(DatosRegistroRespuesta datos) {
 
-        // 1. Primero verificamos que el Tópico y el Autor existan (necesitamos al autor para moderar)
+        // 1. Verificar existencia
         var topico = topicoRepository.findById(datos.topicoId())
                 .orElseThrow(() -> new ValidacionException("El tópico indicado no existe."));
-
         var autor = usuarioRepository.findById(datos.autorId())
                 .orElseThrow(() -> new ValidacionException("El autor indicado no existe."));
 
-        // 2. Ahora que ya tenemos el objeto 'autor', hacemos la Validación de Seguridad
-        // Usamos el bloque try-catch para que el respaldo local funcione si Gemini falla
-        boolean esOfensivo = false;
-        try {
-            esOfensivo = moderadorAI.esContenidoOfensivo(datos.mensaje(), autor.getNombre());
-        } catch (Exception e) {
-            System.out.println("IA fuera de línea, usando moderador local...");
-            var resultadoLocal = moderadorLocal.analizarTexto(datos.mensaje(), autor.getNombre());
-            esOfensivo = resultadoLocal.bloqueado();
+        ResultadoModeracion moderacion = moderadorAI.esContenidoOfensivo(datos.mensaje(), autor.getNombre());
+
+        if (moderacion.bloqueado()) {
+            // Usa moderacion.fuente() REAL
+            throw new ValidacionException(
+                    moderacion.fuente() + ": " + moderacion.detalle()  // ← "MISTRAL", no hardcode "GEMINI"
+            );
         }
 
-        if (esOfensivo) {
-            throw new ValidacionException("La respuesta contiene contenido no permitido (Insultos, Spam o Autor sospechoso).");
-        }
+        // 3. CREAR RESPUESTA (JPA Entity)
+        var nuevaRespuesta = new Respuesta();
+        nuevaRespuesta.setMensaje(datos.mensaje());
+        nuevaRespuesta.setFechaCreacion(LocalDateTime.now());
+        nuevaRespuesta.setAutor(autor);
+        nuevaRespuesta.setTopico(topico);
+        nuevaRespuesta.setSolucion(false); // Por defecto
 
-        // 3. Creación de la entidad (Si pasó la moderación)
-        var respuesta = new Respuesta(datos.mensaje(), topico, autor);
+        // 4. GUARDAR EN BASE DE DATOS
+        respuestaRepository.save(nuevaRespuesta);
 
-        // 4. Persistencia
-        respuestaRepository.save(respuesta);
-
-        // 5. Retorno
-        return new DatosRetornoRespuesta(respuesta);
+        return new DatosRetornoRespuesta(nuevaRespuesta);
     }
 }

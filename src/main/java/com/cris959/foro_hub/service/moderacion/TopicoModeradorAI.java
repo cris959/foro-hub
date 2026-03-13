@@ -11,6 +11,7 @@ import java.util.List;
 @Service
 public class TopicoModeradorAI implements ITopicoModeradorAI {
 
+
     private final TopicoRepository topicoRepository;
 
     private final ModeradorAI analistaIA;
@@ -19,6 +20,7 @@ public class TopicoModeradorAI implements ITopicoModeradorAI {
         this.topicoRepository = topicoRepository;
         this.analistaIA = analistaIA;
     }
+
 
     public String obtenerAnalisisDeTendencias() {
 // 1. Obtener y formatear la hora local
@@ -46,11 +48,9 @@ public class TopicoModeradorAI implements ITopicoModeradorAI {
 
     private String generarAnalisisManual(List<String> ultimosDiez) {
 
-        String fecha = java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+       String textoUnido = String.join(" ", ultimosDiez).toLowerCase();
 
-        String textoUnido = String.join(" ", ultimosDiez).toLowerCase();
-
-        List<String> keywords = List.of("java", "spring", "jpa", "docker", "jwt", "api", "node");
+        List<String> keywords = List.of("java", "spring", "jpa", "docker", "jwt", "api", "node", "php");
 
         List<String> ranking = keywords.stream()
                 .map(word -> {
@@ -64,16 +64,15 @@ public class TopicoModeradorAI implements ITopicoModeradorAI {
                 .map(e -> e.getKey() + " (" + e.getValue() + " menciones)")
                 .toList();
 
-        String tendenciasFinales = ranking.isEmpty() ? "Temas generales" : String.join(", ", ranking);
-//                String.join(", ", ranking);
+        String tendenciasFinales = ranking.isEmpty() ? "temas generales" : String.join(", ", ranking);
+        tendenciasFinales += " (Analizado por Sistema)";
 
         return """
                 {
-                 "popularidad": ["%s"],
-                 "sugerencia": "El servicio de IA está en mantenimiento, pero detectamos fuerte actividad en estos temas. ¡Sigue participando!",
-                 "fuente": "SISTEMA_LOCAL_BACKUP",
-                 "fecha_analisis": "%s"
-                 }
-                """.formatted(tendenciasFinales, fecha);
+                "tendencias": ["%s"],
+                "sugerencia": "El servicio de IA está ocupado, pero detectamos interés en estos temas. ¡Sigue explorando!",
+                "fuente": "BACKUP_SYSTEM"
+                }
+                """.formatted(tendenciasFinales);
     }
 }

@@ -2,11 +2,9 @@ package com.cris959.foro_hub.infra.springai;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ai.chat.metadata.Usage;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.Prompt;
-
 
 
 public class LoggingChatModelDecorator implements ChatModel {
@@ -14,27 +12,35 @@ public class LoggingChatModelDecorator implements ChatModel {
     private static final Logger log = LoggerFactory.getLogger("GEMINI-MONITOR");
     private final ChatModel delegate;
 
-
-    public LoggingChatModelDecorator(ChatModel delegate) {
+    public LoggingChatModelDecorator(ChatModel delegate){
         this.delegate = delegate;
     }
 
     @Override
     public ChatResponse call(Prompt prompt) {
-//        System.out.println(">>>> [LLAMADA A GEMINI DETECTADA POR EL DECORADOR] <<<<"); // Si no ves esto, el decorador no está conectado
         // Ejecutamos la llamada original
         ChatResponse response = delegate.call(prompt);
 
-        // Extraemos y loqueamos el uso
-        Usage usage = response.getMetadata().getUsage();
-
-        log.info(">>>> [GEMINI USAGE REPORT] <<<<");
-        log.info("Modelo: {}", response.getMetadata().getModel());
-        log.info("Tokens Prompt: {}", usage.getPromptTokens());
-        log.info("Tokens Generación: {}", usage.getCompletionTokens());
-        log.info("Tokens Totales: {}", usage.getTotalTokens());
-        log.info("-------------------------------");
+        // Extraemos y pintamos los logs
+        logUsage(response);
 
         return response;
+    }
+
+    private void logUsage(ChatResponse response) {
+        org.springframework.ai.chat.metadata.Usage usage = response.getMetadata().getUsage();
+
+        // 2. Intentamos obtener el modelo desde los metadatos de la respuesta global
+        String model = "gemini-3-flash-preview";
+        if (response.getMetadata().containsKey("model")) {
+            model = response.getMetadata().get("model").toString();
+        }
+
+        System.out.println("GEMINI-MONITOR             : >>>> [GEMINI USAGE REPORT] <<<<");
+        System.out.println("GEMINI-MONITOR             : Modelo: " + model);
+        System.out.println("GEMINI-MONITOR             : Tokens Prompt: " + (usage != null ? usage.getPromptTokens() : 0));
+        System.out.println("GEMINI-MONITOR             : Tokens Generación: " + (usage != null ? usage.getCompletionTokens() : 0));
+        System.out.println("GEMINI-MONITOR             : Tokens Totales: " + (usage != null ? usage.getTotalTokens() : 0));
+        System.out.println("GEMINI-MONITOR             : ------------------------------");
     }
 }
