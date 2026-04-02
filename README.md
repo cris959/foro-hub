@@ -1,21 +1,21 @@
-![](https://api.visitorbadge.io/api/VisitorHit?user=cris959&repo=foro-hub&countColor=%230e75b6)
+[![Visitor Badge](https://api.visitorbadge.io/api/VisitorHit?user=cris959&repo=foro-hub&countColor=%230e75b6)](https://www.github.com/cris959/foro-hub)
 
 ## 🏆 Foro Hub: API REST con Moderación Inteligente
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Status-EN DESARROLLO-brightgreen?style=for-the-badge">
-  <img src="https://img.shields.io/badge/Java-21-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white">
-  <img src="https://img.shields.io/badge/Spring%20Boot-3.x-6DB33F?style=for-the-badge&logo=springboot&logoColor=white">
-  <img src="https://img.shields.io/badge/Swagger-OpenAPI%203.0-85EA2D?style=for-the-badge&logo=swagger&logoColor=black">
-</p>
+<div style="text-align: center;">
+  <img src="https://img.shields.io/badge/Status-EN%20DESARROLLO-brightgreen?style=for-the-badge" alt="Estado: en desarrollo">
+  <img src="https://img.shields.io/badge/Java-21-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white" alt="Java 21">
+  <img src="https://img.shields.io/badge/Spring%20Boot-3.x-6DB33F?style=for-the-badge&logo=springboot&logoColor=white" alt="Spring Boot 3.x">
+  <img src="https://img.shields.io/badge/Swagger-OpenAPI%203.0-85EA2D?style=for-the-badge&logo=swagger&logoColor=black" alt="Swagger OpenAPI 3.0">
+</div>
 
-<p align="center">
-  <img src="https://img.shields.io/badge/MySQL-8.0-4479A1?style=for-the-badge&logo=mysql&logoColor=white">
-  <img src="https://img.shields.io/badge/Google%20Gemini-AI-4285F4?style=for-the-badge&logo=googlegemini&logoColor=white">
-  <img src="https://img.shields.io/badge/Mistral%20AI-AI-FF6000?style=for-the-badge&logo=mistralai&logoColor=white">
-  <img src="https://img.shields.io/badge/Version-v1.0-blue?style=for-the-badge">
-  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge"></a>
-</p>
+<div style="text-align: center;">
+   <img src="https://img.shields.io/badge/MySQL-8.0-4479A1?style=for-the-badge&logo=mysql&logoColor=white" alt="MySQL 8.0">
+  <img src="https://img.shields.io/badge/Google%20Gemini-AI-4285F4?style=for-the-badge&logo=googlegemini&logoColor=white" alt="Google Gemini AI">
+  <img src="https://img.shields.io/badge/Mistral%20AI-AI-FF6000?style=for-the-badge&logo=mistralai&logoColor=white" alt="Mistral AI">
+  <img src="https://img.shields.io/badge/Version-v1.0-blue?style=for-the-badge" alt="Versión 1.0">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge" alt="Licencia MIT"></a>
+</div>
 
 ---
 
@@ -77,11 +77,11 @@ ___
 ### 🛠️ Tecnologías y Recursos Utilizados
 
 | Dependencia / Herramienta | Documentación Oficial                                                                                  |
-|:--------------------------|:-------------------------------------------------------------------------------------------------------|
+|---------------------------|--------------------------------------------------------------------------------------------------------|
 | **Spring Boot 3.x**       | [Framework Base](https://spring.io/projects/spring-boot)                                               |
 | **Spring Security**       | [Autenticación y RBAC](https://spring.io/projects/spring-security)                                     |
 | **Spring AI Gemini**      | [Integración Google GenAI](https://docs.spring.io/spring-ai/reference/api/chat/google-genai-chat.html) |
-| **Spring AI Mistral**     | 	[Integración Mistral AI](https://docs.spring.io/spring-ai/reference/api/chatmodel.html) |                                                                        |
+| **Spring AI Mistral**     | 	[Integración Mistral AI](https://docs.spring.io/spring-ai/reference/api/chatmodel.html)               |                                                                        |
 | **SpringDoc OpenAPI**     | [Swagger UI Docs](https://springdoc.org/)                                                              |
 | **MySQL Connector**       | [Persistencia de Datos](https://dev.mysql.com/downloads/connector/j/)                                  |
 | **JJWT**                  | [Implementación de Tokens JWT](https://github.com/jwtk/jjwt)                                           |
@@ -603,11 +603,11 @@ A diferencia de otros foros, Foro Hub garantiza la integridad del contenido medi
 
 Para garantizar que el foro sea un espacio seguro y productivo, implementamos un sistema de moderación en cascada que combina lo mejor de la IA con la estabilidad de procesos locales:
 
-| Capa | Tecnología               | Especialidad | Estado |
-| :--- |:-------------------------| :--- | :--- |
-| **Primaria** | `Gemini 3 flash preview` | Análisis de contexto complejo y sarcasmo | 🌐 Cloud |
-| **Secundaria** | `Mistral Large`          | Eficiencia de respuesta y precisión técnica | 🌐 Cloud |
-| **Seguridad** | `Heurístico Local`       | Filtro de palabras clave, SPAM y suplantación | 💻 Local (Offline) |
+| Capa           | Tecnología               | Especialidad                                   | Estado             |
+|:---------------|:-------------------------|:-----------------------------------------------|:-------------------|
+| **Primaria**   | `Gemini 3 flash preview` | Análisis de contexto complejo y sarcasmo       | 🌐 Cloud           |
+| **Secundaria** | `Mistral Large`          | Eficiencia de respuesta y precisión técnica    | 🌐 Cloud           |
+| **Seguridad**  | `Heurístico Local`       | Filtro de palabras clave, SPAM y suplantación  | 💻 Local (Offline) |
 ___
 ## 🚀 Cómo Ejecutar el Proyecto
 
@@ -631,16 +631,27 @@ SQLCREATE DATABASE foro_hub;
 Para mantener la seguridad, el proyecto utiliza variables de entorno. Puedes configurarlas en tu IDE (IntelliJ) o en tu
 sistema:
 
-| Variable      | Descripción               | Ejemplo                  |
-|---------------|---------------------------|--------------------------|
-| DB_NAME       | Nombre de la DB           | foro_hub                 |
-| DB_USER       | Usuario de MySQL          | tu_usuario               |
-| DB_PASSWORD   | Contraseña de MySQL       | tu_password              |
-| JWT_SECRET    | Clave secreta para tokens | una_clave_muy_segura_123 |
-| PROJECT_ID    | Numero del Proyecto GenAI | gen-lang-client-03....   |
-| GEMINI_APIKEY | Key de Gemini (Google AI) | AIzaSy...                |
-| MISTRAL_APIKEY| 	Key de Mistral AI        | 	XyZ123...               |
+| Variable        | Descripción               | Ejemplo                  |
+|-----------------|---------------------------|--------------------------|
+| DB_NAME         | Nombre de la DB           | foro_hub                 |
+| DB_USER         | Usuario de MySQL          | tu_usuario               |
+| DB_PASSWORD     | Contraseña de MySQL       | tu_password              |
+| JWT_SECRET      | Clave secreta para tokens | una_clave_muy_segura_123 |
+| PROJECT_ID      | Numero del Proyecto GenAI | gen-lang-client-03....   |
+| GEMINI_APIKEY   | Key de Gemini (Google AI) | AIzaSy...                |
+| MISTRAL_APIKEY  | 	Key de Mistral AI        | 	XyZ123...               |
 
+___
+
+## 🔗 Endpoints Principales
+
+| Método    | Endpoint            | Descripción              | Autenticación |
+|-----------|---------------------|--------------------------|---------------|
+| `POST`    | `/login`            | Autenticación JWT        | ❌ Público     |
+| `POST`    | `/topicos`          | Crear tópico             | ✅ JWT         |
+| `POST`    | `/respuestas`       | Responder (AI moderado)  | ✅ JWT         |
+| `GET`     | `/topicos`          | Listado paginado         | ✅ JWT         |
+| `GET`     | `/swagger-ui.html`  | Documentación completa   | ❌ Público     |
 ___
 
 ## Cómo descargar el proyecto
