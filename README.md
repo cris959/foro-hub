@@ -695,7 +695,7 @@ Si la IA falla, entrará en juego el **Filtro Heurístico Local** (basado en pun
 ## 📖 Documentación Interactiva (Swagger/OpenAPI)
 Para visualizar todos los endpoints disponibles, los esquemas de datos y los requisitos de seguridad, podés acceder a la interfaz de Swagger.
 
-* URL de acceso: http://159.112.143.193:8000/swagger-ui.html
+* URL de acceso: https://foro-hub-christian.duckdns.org/api/swagger-ui/index.html
 * **Método:** `GET`
 
 * Qué podés hacer:
