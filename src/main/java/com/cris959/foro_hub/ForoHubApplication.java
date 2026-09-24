@@ -17,53 +17,42 @@ limitations under the License.
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-import java.security.Security;
 
 @SpringBootApplication
-		(exclude = {
-				org.springframework.ai.autoconfigure.mistralai.MistralAiAutoConfiguration.class,
-				org.springframework.ai.autoconfigure.chat.observation.ChatObservationAutoConfiguration.class,
-				org.springframework.ai.autoconfigure.image.observation.ImageObservationAutoConfiguration.class,
-				org.springframework.ai.autoconfigure.vectorstore.observation.VectorStoreObservationAutoConfiguration.class
-		})
+ (exclude = {
+		org.springframework.ai.autoconfigure.mistralai.MistralAiAutoConfiguration.class,
+		org.springframework.ai.autoconfigure.chat.observation.ChatObservationAutoConfiguration.class,
+		org.springframework.ai.autoconfigure.image.observation.ImageObservationAutoConfiguration.class,
+		org.springframework.ai.autoconfigure.vectorstore.observation.VectorStoreObservationAutoConfiguration.class
+})
 public class ForoHubApplication {
-
-	static {
-		// Registrar el proveedor PKI de Oracle para que la JVM reconozca el KeyStore de tipo SSO (cwallet.sso)
-		try {
-			Security.addProvider((java.security.Provider) Class.forName("oracle.security.pki.OraclePKIProvider").getDeclaredConstructor().newInstance());
-			System.out.println(">>> OraclePKIProvider registrado correctamente en la JVM <<<");
-		} catch (Exception e) {
-			System.err.println("Advertencia al registrar OraclePKIProvider: " + e.getMessage());
-		}
-	}
 
 	public static void main(String[] args) {
 		SpringApplication.run(ForoHubApplication.class, args);
 	}
 
-//  @Bean
-//  public CommandLineRunner testMistral(@Qualifier("mistralChatModel") ChatModel mistralChatModel) {
-//     return args -> {
-//        try {
-//           System.out.println("--- Probando conexión con Mistral (Constructor 6 params) ---");
+//	@Bean
+//	public CommandLineRunner testMistral(@Qualifier("mistralChatModel") ChatModel mistralChatModel) {
+//		return args -> {
+//			try {
+//				System.out.println("--- Probando conexión con Mistral (Constructor 6 params) ---");
 //
-//           // Usamos un Prompt explícito con una lista de herramientas vacía
-//           var prompt = new org.springframework.ai.chat.prompt.Prompt(
-//                 "Responde solo: CONECTADO",
-//                 org.springframework.ai.mistralai.MistralAiChatOptions.builder()
-//                       .toolCallbacks(java.util.List.of())
-//                       .build()
-//           );
+//				// Usamos un Prompt explícito con una lista de herramientas vacía
+//				var prompt = new org.springframework.ai.chat.prompt.Prompt(
+//						"Responde solo: CONECTADO",
+//						org.springframework.ai.mistralai.MistralAiChatOptions.builder()
+//								.toolCallbacks(java.util.List.of())
+//								.build()
+//				);
 //
-//           var response = mistralChatModel.call(prompt);
-//           System.out.println("Resultado: " + response.getResult().getOutput().getText());
+//				var response = mistralChatModel.call(prompt);
+//				System.out.println("Resultado: " + response.getResult().getOutput().getText());
 //
-//        } catch (Exception e) {
-//           System.err.println("Error en ejecución: " + e.getMessage());
-//           // Si el error persiste, imprime esto para ver si es un 401 o 404
-//           // e.printStackTrace();
-//        }
-//     };
-//  }
+//			} catch (Exception e) {
+//				System.err.println("Error en ejecución: " + e.getMessage());
+//				// Si el error persiste, imprime esto para ver si es un 401 o 404
+//				// e.printStackTrace();
+//			}
+//		};
+//	}
 }
