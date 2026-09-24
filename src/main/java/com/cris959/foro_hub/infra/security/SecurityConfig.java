@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -30,11 +31,13 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
+                .cors(Customizer.withDefaults())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // 1. PÚBLICO
-                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/webjars/**").permitAll()
+                        // 1. PUBLICO
+                        .requestMatchers("/v3/api-docs/**", "/api/swagger-ui/**", "/api/swagger-ui/index.html", "/swagger-ui/**", "/webjars/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/login").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/imagenes/ver/**").permitAll()
 
                         // 2. LECTURA (Permitir a USER y ADMIN consultar antes de bloquear el resto)
                         // Ponemos esto ARRIBA para que el GET no sea bloqueado por la regla de ADMIN
@@ -43,11 +46,12 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/usuarios/{id}").hasAnyRole("USER", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/usuarios/buscar").hasAnyRole("USER", "ADMIN")
 
-                        // 3. CREACIÓN (USER y ADMIN)
+                        // 3. CREACION (USER y ADMIN)
                         .requestMatchers(HttpMethod.POST, "/api/topicos/**", "/api/respuestas/**").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/imagenes/upload").authenticated()
 
-                        // 4. SOLO ADMIN (Gestión y Moderación)
-                        // Ahora sí, cualquier otra operación (POST, PUT, DELETE) en estas rutas es solo ADMIN
+                        // 4. SOLO ADMIN (Gestion y Moderacion)
+                        // Ahora si, cualquier otra operacion (POST, PUT, DELETE) en estas rutas es solo ADMIN
                         .requestMatchers("/api/usuarios/**").hasRole("ADMIN")
                         .requestMatchers("/api/perfiles/**").hasRole("ADMIN")
                         .requestMatchers("/api/cursos/**").hasRole("ADMIN")

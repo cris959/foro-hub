@@ -38,7 +38,7 @@ public class UsuarioServiceImpl implements IUsuarioService {
     @Override
     @Transactional
     public DatosRespuestaUsuario registrarUsuario(DatosRegistroUsuario datos) {
-        // Validación de email único
+        // Validacion de email unico
         if (usuarioRepository.countByEmailNative(datos.email()) > 0) {
             throw new ValidacionException("Ya existe un usuario registrado con este correo electrónico.");
         }
@@ -52,6 +52,10 @@ public class UsuarioServiceImpl implements IUsuarioService {
         usuario.setPassword(passwordEncoder.encode(datos.password()));
         usuario.setPerfil(perfil);
 
+        // --- EL CAMBIO CLAVE PARA EVITAR EL NULL ---
+        usuario.setRutaFoto("default-user.jpg");
+        // -------------------------------------------
+
         usuarioRepository.save(usuario);
 
         // Usamos el mapper para la respuesta
@@ -63,7 +67,7 @@ public class UsuarioServiceImpl implements IUsuarioService {
     public DatosRespuestaUsuario obtenerPorId(Long id) {
         // 1. Buscamos el usuario en el repositorio
         return usuarioRepository.findById(id)
-                // 2. Si no existe, lanzamos una excepción clara
+                // 2. Si no existe, lanzamos una excepcion clara
                 .map(usuarioMapper::toDatosRespuestaUsuario)
                 .orElseThrow(() -> new EntityNotFoundException("No se encontró el usuario con el ID: " + id));
     }
@@ -111,7 +115,7 @@ public class UsuarioServiceImpl implements IUsuarioService {
         var usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("No se encontró el usuario con ID: " + id));
 
-        // 2. Aplicamos la eliminación lógica
+        // 2. Aplicamos la eliminacion logica
         usuario.setActivo(false);
 
         // Nota: Gracias a @Transactional, el cambio se guarda solo al final del procedimiento.
@@ -137,5 +141,18 @@ public class UsuarioServiceImpl implements IUsuarioService {
                 .stream()
                 .map(usuarioMapper::toDatosRespuestaUsuario)
                 .toList();
+    }
+
+    @Override
+    @Transactional
+    public void actualizarFotoPerfil(String email, String rutaFoto) {
+        // Buscamos al usuario por el email que viene del Token JWT
+        Usuario usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("No se encontró el usuario con email: " + email));
+
+        // Actualizamos el campo que antes estaba en null
+        usuario.setRutaFoto(rutaFoto);
+
+        // Hibernate se encarga del resto gracias al @Transactiona
     }
 }

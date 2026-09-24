@@ -20,4 +20,6 @@ public interface IUsuarioService {
     void activar(Long id);
 
     List<DatosRespuestaUsuario> listarInactivos();
+
+    void actualizarFotoPerfil(String email, String rutaFoto);
 }

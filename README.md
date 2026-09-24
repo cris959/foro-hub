@@ -13,6 +13,7 @@
    <img src="https://img.shields.io/badge/MySQL-8.0-4479A1?style=for-the-badge&logo=mysql&logoColor=white" alt="MySQL 8.0">
   <img src="https://img.shields.io/badge/Google%20Gemini-AI-4285F4?style=for-the-badge&logo=googlegemini&logoColor=white" alt="Google Gemini AI">
   <img src="https://img.shields.io/badge/Mistral%20AI-AI-FF6000?style=for-the-badge&logo=mistralai&logoColor=white" alt="Mistral AI">
+  <img src="https://img.shields.io/badge/Oracle-F80000?style=for-the-badge&logo=oracle&logoColor=white" alt="Oracle">
   <img src="https://img.shields.io/badge/Version-v1.0-blue?style=for-the-badge" alt="Versión 1.0">
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge" alt="Licencia MIT"></a>
 </div>
@@ -671,9 +672,81 @@ Compila y ejecuta el archivo
 ````
 ForoHubApplication.java
 ````
-
 ___
 
+## ⚔️ Guía de Pruebas y Validación (Foro Hub)
+Una vez que el servidor esté activo en la instancia **Oracle Cloud Infrastructure (OCI)** en Ashburn (usando la red Always Free), podés realizar las siguientes pruebas para validar la seguridad y la inteligencia del sistema.
+
+1. 🛡️ Prueba de Moderación Inteligente (Gemini AI | Mistral AI + Fallback)
+   El sistema cuenta con una Capa de Seguridad Híbrida. Si intentás registrar un tópico con contenido inapropiado, el sistema lo rechazará.
+
+* Paso 1: Abrí Postman y realizá un **POST** a http://159.112.143.193:8000/api/topicos.
+
+* Paso 2: En el Header, asegurate de incluir tu **Bearer Token** de usuario.
+
+* Paso 3: En el **Body (JSON)**, intentá enviar un mensaje que contenga insultos, spam evidente o lenguaje ofensivo.
+
+* Resultado esperado: El servidor debería responder con un **400 Bad Request**.
+
+Si **Gemini** o **Mistral** estan activos, el rechazo será por análisis semántico.
+
+Si la IA falla, entrará en juego el **Filtro Heurístico Local** (basado en puntuación de riesgo).
+
+## 📖 Documentación Interactiva (Swagger/OpenAPI)
+Para visualizar todos los endpoints disponibles, los esquemas de datos y los requisitos de seguridad, podés acceder a la interfaz de Swagger.
+
+* URL de acceso: http://159.112.143.193:8000/swagger-ui.html
+* **Método:** `GET`
+
+* Qué podés hacer:
+
+1. Ver la lista completa de controladores (Tópicos, Usuarios, Login, etc.).
+
+2. acer clic en "**Authorize**" y pegar tu Token para probar los endpoints directamente desde el navegador.
+
+3. Revisar las respuestas exitosas (**201 Created, 200 OK**) y los errores controlados (**403 Forbidden**).
+
+### 📊 Monitoreo de Consumo de IA
+El sistema genera reportes automáticos de uso de tokens para cada operación de moderación o análisis de tendencias.
+
+**Ejemplo de reporte en tiempo real:**
+- **Modelo:** Gemini-3-Flash-Preview
+- **Input:** ~174 tokens (Contexto del tópico + Reglas de moderación)
+- **Output:** ~3 tokens (Decisión: APROBADO/RECHAZADO)
+
+Este monitoreo permite optimizar los costos de API y asegurar que el sistema escale de manera eficiente en la infraestructura de **Oracle Cloud**.
+
+
+### 🧠 Inteligencia Artificial Dual (Resiliencia)
+El proyecto implementa un sistema de **Failover** (conmutación por error) utilizando dos proveedores líderes:
+
+* **Google Gemini:** Utilizado para el análisis semántico principal y detección de tendencias.
+* **Mistral AI:** Integrado como modelo de respaldo para asegurar que la moderación nunca se detenga ante límites de cuota de API.
+* **Script de Monitoreo:** El comando `./start_forohub.sh` verifica automáticamente la disponibilidad de ambos motores al arrancar.
+
+## 🛠️ Comandos Útiles de Terminal (Ubuntu)
+Si necesitás ver qué está pasando en el servidor mientras hacés las pruebas:
+````
+# Ver logs en tiempo real para monitorear a Gemini
+sudo journalctl -u forohub -f
+
+# Reiniciar el servicio si hiciste cambios en el código
+sudo systemctl restart forohub
+````
+### 🔑 Acceso SSH (PowerShell / Bash)
+Para conectar con la infraestructura en la nube y gestionar los modelos de **Gemini** y **Mistral**, utilizá el siguiente comando:
+
+````
+ssh -i C:\Desarrollo\oracle_key.key ubuntu@159.112.143.193
+````
+Nota: La llave oracle_key.key debe estar en tu carpeta local de desarrollo y el usuario por defecto es ubuntu.
+
+### 🛠️ Automatización de Infraestructura
+Para facilitar el despliegue en la instancia de Ubuntu, se desarrollaron scripts de Bash que gestionan el ciclo de vida de la aplicación:
+
+* `./start_forohub.sh`: Limpia puertos, asegura la DB, reinicia el servicio y verifica la conexión con Gemini AI.
+* `./stop_forohub.sh`: Detiene los servicios de forma segura.
+___
 # Colaboraciones 🎯
 
 Si deseas contribuir a este proyecto, por favor sigue estos pasos:

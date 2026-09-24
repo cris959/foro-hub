@@ -19,11 +19,13 @@ import com.cris959.foro_hub.dto.DatosRespuestaCurso;
 import com.cris959.foro_hub.service.ICursoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -38,7 +40,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 )
 @RestController
 @RequestMapping("/api/cursos")
-@SecurityRequirement(name = "bearerAuth")
+@SecurityRequirement(name = "bearer-key")
 public class CursoController {
 
     private final ICursoService cursoService;
@@ -65,17 +67,24 @@ public class CursoController {
         return ResponseEntity.created(uri).body(cursoResponse);
     }
 
-    // GET: Listar cursos activos con paginación
-    @Operation(
-            summary = "Listar cursos activos",
-            description = "Paginación por defecto (size=10, sort=nombre ASC). Soporta ?page=0&size=20&sort=nombre,desc. USER/ADMIN."
-    )
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Página de cursos activos")
+    // GET: Listar cursos activos con paginacion
+    @Operation(summary = "Listar cursos activos")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Pagina de cursos obtenida",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = DatosRespuestaCurso.class)) })
     })
     @GetMapping
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    public ResponseEntity<Page<DatosRespuestaCurso>> listar(@PageableDefault(size = 10, sort = {"nombre"}) Pageable paginacion) {
+    public ResponseEntity<Page<DatosRespuestaCurso>> listar(
+            @ParameterObject //
+            @PageableDefault(
+                    size = 10,
+                    page = 0,
+                    sort = "nombre"
+                    ) Pageable paginacion) {
+
+//         Retorna la pagina de cursos procesada por el servicio
         return ResponseEntity.ok(cursoService.listar(paginacion));
     }
 

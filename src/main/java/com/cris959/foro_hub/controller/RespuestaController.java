@@ -26,6 +26,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -45,7 +46,7 @@ import java.net.URI;
 )
 @RestController
 @RequestMapping("/api/respuestas")
-@SecurityRequirement(name = "bearerAuth")
+@SecurityRequirement(name = "bearer-key")
 public class RespuestaController {
 
     private final IRespuestaService respuestaService;
@@ -92,7 +93,7 @@ public class RespuestaController {
     public ResponseEntity<DatosRetornoRespuesta> registrar(@RequestBody @Valid DatosRegistroRespuesta datos, UriComponentsBuilder uriComponentsBuilder) {
         DatosRetornoRespuesta respuesta = respuestaServiceIA.registrar(datos);
 
-        // Creamos la URL dinámica para la nueva respuesta
+        // Creamos la URL dinamica para la nueva respuesta
         URI url = uriComponentsBuilder.path("/respuestas/{id}").buildAndExpand(respuesta.id()).toUri();
 //        System.out.println("Entrando al procedimiento registrar respuesta...");
         return ResponseEntity.created(url).body(respuesta);
@@ -109,39 +110,75 @@ public class RespuestaController {
     @PutMapping("/{id}/solucion")
     @PreAuthorize("hasAnyRole('ADMIN')")
     @Transactional
-    public ResponseEntity marcarComoSolucion(@PathVariable Long id) {
+    public ResponseEntity<String> marcarComoSolucion(@PathVariable Long id) {
         respuestaService.marcarComoSolucion(id);
-        // Aquí llamarías a un procedimiento del service que cambie el boolean 'solucion' a true
+        // Aqui llamarias a un procedimiento del service que cambie el boolean 'solucion' a true
         return ResponseEntity.ok("La respuesta ha sido marcada como la solución definitiva!");
     }
 
     @Operation(
-            summary = "Respuestas por tópico",
-            description = "Lista paginada de respuestas de un tópico (sort=fechaCreacion ASC). Soporta ?page=0&size=5."
+            summary = "Listar respuestas por tópico",
+            description = "Obtiene una lista paginada de todas las respuestas asociadas a un tópico específico. " +
+                    "Por defecto, muestra 10 elementos por página ordenados por fecha de creación descendente."
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Página de respuestas")
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Operación exitosa",
+                    content = @Content(
+                            mediaType = "application/json",
+                            // Obligamos a Swagger a usar tu DTO para que no invente números
+                            schema = @Schema(implementation = DatosRetornoRespuesta.class)
+                    )
+            ),
+            @ApiResponse(responseCode = "404", description = "Tópico no encontrado")
     })
-    @GetMapping("/respuesta/{topicoId}")
+    @GetMapping("/topico/{topicoId}") // Cambie "respuesta" por "topico" para que sea mas semantico
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    public ResponseEntity<Page<DatosRetornoRespuesta>> listarPorTopico(@PathVariable Long topicoId,
-                                                                       @PageableDefault(size = 10, sort = "fechaCreacion", direction = Sort.Direction.ASC) Pageable paginacion) {
+    public ResponseEntity<Page<DatosRetornoRespuesta>> listarPorTopico(
+            @PathVariable Long topicoId,
+            @ParameterObject //
+            @PageableDefault(
+                    size = 10,
+                    page = 0,
+                    sort = "fechaCreacion",
+                    direction = Sort.Direction.DESC
+            ) Pageable paginacion) {
+
         var pagina = respuestaService.listarPorTopico(topicoId, paginacion);
         return ResponseEntity.ok(pagina);
     }
 
     @Operation(
             summary = "Todas las respuestas",
-            description = "Lista global paginada (sort=fechaCreacion DESC). USER/ADMIN."
+            description = "Lista global paginada ordenada por fecha de creación descendente. Acceso para USER y ADMIN."
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Página de todas las respuestas")
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Pagina de todas las respuestas obtenida correctamente",
+                    content = @Content(
+                            mediaType = "application/json",
+                            // Forzamos el uso de tu DTO para que la IA no invente números gigantes en la respuesta
+                            schema = @Schema(implementation = DatosRetornoRespuesta.class)
+                    )
+            )
     })
     @GetMapping
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<Page<DatosRetornoRespuesta>> listarTodasLasRespuestas(
-            @PageableDefault(size = 10, sort = "fechaCreacion", direction = Sort.Direction.DESC) Pageable paginacion) {
+            @ParameterObject //
+            @PageableDefault(
+                    size = 10,
+                    page = 0,
+                    sort = "fechaCreacion",
+                    direction = Sort.Direction.DESC
+            ) Pageable paginacion) {
+
+        // Recupera la lista paginada desde el servicio
         var todasLasRespuestas = respuestaService.listarTodas(paginacion);
+
+        // Retorna la respuesta con estado 200 OK
         return ResponseEntity.ok(todasLasRespuestas);
     }
 

@@ -29,8 +29,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -47,7 +49,7 @@ import java.util.List;
 )
 @RestController
 @RequestMapping("/api/topicos")
-@SecurityRequirement(name = "bearerAuth")
+@SecurityRequirement(name = "bearer-key")
 public class TopicoController {
 
     private final ITopicoService topicoService;
@@ -58,15 +60,15 @@ public class TopicoController {
         this.service = service;
     }
 
-    // POST: Crear un nuevo tópico
+    // POST: Crear un nuevo topico
     @Operation(
             summary = "Registra un nuevo tópico con Moderación AI",
             description = """
                     Registra un tópico vinculado a un usuario y curso específicos.
-                    Capa de Seguridad Híbrida: 
-                    1. Principal: Análisis semántico mediante Inteligencia Artificial (Gemini).
-                    2. Respaldo (Fallback): Filtro heurístico local basado en puntuación de riesgo
-                     (Insultos, Spam, Suplantación) en caso de caída del servicio de IA o fallos de red.
+                    Capa de Seguridad Híbrida y Resiliencia:
+                            1. Nivel Principal: Análisis semántico avanzado mediante Google Gemini para detección de contenido ofensivo o fuera de contexto.
+                            2. Nivel de Respaldo (Fallback AI): En caso de latencia o cuotas excedidas en Gemini, el sistema escala automáticamente a Mistral AI.
+                            3. Nivel de Contingencia (Offline): Si ambos servicios de IA están fuera de línea o hay fallos de red, se activa nuestro Filtro Heurístico Local basado en puntuación de riesgo (Insultos, Spam, Suplantación).
                     """,
             tags = { "tópicos" }
     )
@@ -86,21 +88,38 @@ public class TopicoController {
         return ResponseEntity.created(uri).body(topicoResponse);
     }
 
-    // GET: Listar tópicos con paginación
+    // GET: Listar topicos con paginacion
     @Operation(
-            summary = "Listar tópicos paginados",
-            description = "Lista con paginación por defecto (size=10, sort=fechaCreacion). Soporta ?page=0&size=20&sort=titulo,desc. USER/ADMIN."
+            summary = "Listar topicos paginados",
+            description = "Lista con paginacion por defecto: size=10, sort=fechaCreacion DESC. Acceso para USER y ADMIN."
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Página de tópicos")
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Pagina de topicos obtenida correctamente",
+                    content = @Content(
+                            mediaType = "application/json",
+                            // Forzamos a Swagger a usar tu DTO para evitar los nmeros gigantes de la IA
+                            schema = @Schema(implementation = DatosRespuestaTopico.class)
+                    )
+            )
     })
     @GetMapping
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    public ResponseEntity<Page<DatosRespuestaTopico>> listar(@PageableDefault(size = 10, sort = {"fechaCreacion"}) Pageable paginacion) {
+    public ResponseEntity<Page<DatosRespuestaTopico>> listar(
+            @ParameterObject //
+            @PageableDefault(
+                    size = 10,
+                    page = 0,
+                    sort = "fechaCreacion",
+                    direction = Sort.Direction.DESC
+            ) Pageable paginacion) {
+
+        // Retorna la pagina de topicos procesada por el servicio
         return ResponseEntity.ok(topicoService.listar(paginacion));
     }
 
-    // GET: Buscar un tópico por ID
+    // GET: Buscar un topico por ID
     @Operation(
             summary = "Detalle tópico por ID",
             description = "Obtiene tópico completo por ID. USER/ADMIN."
@@ -115,7 +134,7 @@ public class TopicoController {
         return ResponseEntity.ok(topicoService.buscarPorId(id));
     }
 
-    // PUT: Actualizar un tópico
+    // PUT: Actualizar un topico
     @Operation(
             summary = "Actualizar tópico",
             description = "Modifica título/mensaje/estado por ID. Solo ADMIN."
@@ -134,7 +153,7 @@ public class TopicoController {
         return ResponseEntity.ok(respuesta);
     }
 
-    // DELETE: Eliminar un tópico
+    // DELETE: Eliminar un topico
     @Operation(
             summary = "Eliminar tópico",
             description = "Marca tópico como eliminado (soft delete) por ID. Solo ADMIN. Retorna 204."
@@ -176,7 +195,7 @@ public class TopicoController {
     @PostMapping("/{id}/activar")
     @PreAuthorize("hasAnyRole('ADMIN')")
     @Transactional
-    public ResponseEntity activar(@PathVariable Long id) {
+    public ResponseEntity<Void> activar(@PathVariable Long id) {
         topicoService.activar(id);
         return ResponseEntity.noContent().build();
     }
@@ -184,8 +203,8 @@ public class TopicoController {
     @Operation(
             summary = "Obtener análisis de tendencias",
             description = """
-        Analiza los tópicos recientes del foro usando **IA** para identificar las 3 tendencias principales 
-        con sugerencias de contenido. 
+        Analiza los tópicos recientes del foro usando **IA** para identificar las 3 tendencias principales
+        con sugerencias de contenido.
         
         **Sistema inteligente híbrido:**
         • **Primario**: Análisis en tiempo real con IA

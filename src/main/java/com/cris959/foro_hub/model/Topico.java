@@ -14,6 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -47,6 +48,7 @@ public class Topico {
     private Boolean activo = true;
 
     @Column(name = "fecha_creacion", nullable = false)
+    @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss") // <--- Asi lo ver el usuario en Swagger
     private LocalDateTime fechaCreacion = LocalDateTime.now();
 
     @PrePersist
@@ -66,5 +68,6 @@ public class Topico {
     private Curso curso;
 
     @OneToMany(mappedBy = "topico")
+    @OrderBy("fechaCreacion ASC") // <--- Esto mantiene el orden del foro en tu JSON
     private List<Respuesta> respuestas = new ArrayList<>();
 }

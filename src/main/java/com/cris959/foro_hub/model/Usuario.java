@@ -34,8 +34,8 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "usuarios")
-@SQLDelete(sql = "UPDATE usuarios SET activo = 0 WHERE id = ?") // Opcional: automatiza el borrado lógico
-@Where(clause = "activo = 1") // Filtra automáticamente todos los SELECT
+@SQLDelete(sql = "UPDATE usuarios SET activo = 0 WHERE id = ?") // Opcional: automatiza el borrado logico
+@Where(clause = "activo = 1") // Filtra automaticamente todos los SELECT
 public class Usuario implements UserDetails {
 
     @Id
@@ -49,11 +49,14 @@ public class Usuario implements UserDetails {
     private String password;
 
     @Column(name = "activo", nullable = false)
-    private Boolean activo = true; // Por defecto está activo
+    private Boolean activo = true; // Por defecto esta activo
 
     @ManyToOne(fetch = FetchType.EAGER) // EAGER para tener el rol disponible al autenticar
     @JoinColumn(name = "perfil_id")
     private Perfil perfil;
+
+    @Column(name = "ruta_foto")
+    private String rutaFoto;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

@@ -39,7 +39,7 @@ import java.util.List;
 )
 @RestController
 @RequestMapping("/api/perfiles")
-@SecurityRequirement(name = "bearerAuth")
+@SecurityRequirement(name = "bearer-key")
 public class PerfilController {
 
     private final IPerfilService perfilService;
@@ -62,10 +62,10 @@ public class PerfilController {
     @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<DatosListaPerfil> registrar(@RequestBody @Valid DatosRegistroPerfil datos,
                                                       UriComponentsBuilder uriComponentsBuilder) {
-        // 1. Guardamos el perfil a través del service
+        // 1. Guardamos el perfil a traves del service
         var perfil = perfilService.guardar(datos);
 
-        // 2. Creamos la URL dinámica (ej: /perfiles/1)
+        // 2. Creamos la URL dinamica (ej: /perfiles/1)
         URI url = uriComponentsBuilder.path("/perfiles/{id}")
                 .buildAndExpand(perfil.id()) // Asegúrate que DatosListaPerfil tenga el campo id
                 .toUri();
@@ -99,7 +99,7 @@ public class PerfilController {
     @GetMapping("/nombre/{nombre}")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<DatosListaPerfil> buscarPorNombre(@PathVariable PerfilNombre nombre) {
-        // Spring convertirá automáticamente el String de la URL al Enum PerfilNombre
+        // Spring convertira automaticamente el String de la URL al Enum PerfilNombre
         var perfil = perfilService.buscarPorNombre(nombre);
         return ResponseEntity.ok(perfil);
     }

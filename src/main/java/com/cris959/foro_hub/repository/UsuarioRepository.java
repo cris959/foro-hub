@@ -1,6 +1,7 @@
 package com.cris959.foro_hub.repository;
 
 import com.cris959.foro_hub.model.Usuario;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;

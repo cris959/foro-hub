@@ -3,6 +3,8 @@ target/
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
+**/src/main/resources/oracle_wallet/**
+!**/src/main/resources/oracle_wallet/.gitkeep
 
 ### STS ###
 .apt_generated

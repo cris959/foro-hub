@@ -41,7 +41,7 @@ import java.util.List;
 )
 @RestController
 @RequestMapping("/api/usuarios")
-@SecurityRequirement(name = "bearerAuth")
+@SecurityRequirement(name = "bearer-key")
 public class UsuarioController {
 
     private final IUsuarioService usuarioService;
@@ -68,7 +68,7 @@ public class UsuarioController {
         // Llamamos al servicio (que usa el mapper y el repositorio)
         DatosRespuestaUsuario respuesta = usuarioService.registrarUsuario(datos);
 
-        // Buenas prácticas: Retornar 201 Created y la URL del nuevo recurso
+        // Buenas practicas: Retornar 201 Created y la URL del nuevo recurso
         URI url = uriComponentsBuilder.path("/usuarios/{id}").buildAndExpand(respuesta.id()).toUri();
         return ResponseEntity.created(url).body(respuesta);
     }
@@ -121,7 +121,7 @@ public class UsuarioController {
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN')")
     @Transactional
-    public ResponseEntity actualizar(@PathVariable Long id,
+    public ResponseEntity<DatosRespuestaUsuario> actualizar(@PathVariable Long id,
                                      @RequestBody @Valid DatosActualizarUsuario datos) {
         var usuarioActualizado = usuarioService.actualizar(id, datos);
         return ResponseEntity.ok(usuarioActualizado);
@@ -139,7 +139,7 @@ public class UsuarioController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN')")
     @Transactional
-    public ResponseEntity eliminar(@PathVariable Long id) {
+    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
         usuarioService.eliminar(id);
         return ResponseEntity.noContent().build();
     }
@@ -155,9 +155,9 @@ public class UsuarioController {
     @PostMapping("/{id}/activar")
     @PreAuthorize("hasAnyRole('ADMIN')")
     @Transactional
-    public ResponseEntity activar(@PathVariable Long id) {
+    public ResponseEntity<Void> activar(@PathVariable Long id) {
         usuarioService.activar(id);
-        return ResponseEntity.noContent().build(); // Retornamos 204 porque la operación fue exitosa
+        return ResponseEntity.noContent().build(); // Retornamos 204 porque la operacion fue exitosa
     }
 
     @Operation(
