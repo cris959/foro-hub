@@ -33,3 +33,6 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Archivos de notas y despliegue personal
+backup-deploy.md
